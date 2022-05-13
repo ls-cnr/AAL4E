@@ -1,7 +1,7 @@
 from pickletools import uint8
 import cv2, numpy
 '''
-    Script for the recognition of a state of idling or the presence of motion in a scene. The video used can be real live captured using "dev/video0" source or a video file 
+    Script for the recognition of a state of idling or the presence of motion in a scene. The video used can be real live captured using "dev/video0" source 
 '''
 
 #Initialization of the stream
@@ -9,21 +9,6 @@ def video_init():
     #Capturing video from /dev/video0 source
     try:
         video_input = cv2.VideoCapture(0)
-    except RuntimeError:#Notice if there's no possibility to open the stream due to it being busy or unaccessible
-        raise RuntimeError("Unable to open video stream")
-    
-    #Gets source resolution
-    video_height = int(video_input.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    video_width = int(video_input.get(cv2.CAP_PROP_FRAME_WIDTH))
-
-    #Returning the source and its resolution
-    return video_input, video_height, video_width
-
-#Overload of the aforwritten method to allow the usage of a different path
-def video_init(path):
-    #Capturing video from a source accessible to the path parameter
-    try:
-        video_input = cv2.VideoCapture(path)
     except RuntimeError:#Notice if there's no possibility to open the stream due to it being busy or unaccessible
         raise RuntimeError("Unable to open video stream")
     
