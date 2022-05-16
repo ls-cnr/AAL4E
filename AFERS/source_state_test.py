@@ -1,4 +1,11 @@
 import source_state_check
+import sys
 
-if source_state_check.motion_recognition() == 1:
-    print("Motion Recognised")
+try:
+    if source_state_check.idle_recognition() == 1:
+        print("idle Recognised")
+    else:
+        print("Error")
+except KeyboardInterrupt:
+    sys.exit(0)
+ 
