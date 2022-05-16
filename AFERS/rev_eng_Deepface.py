@@ -45,15 +45,10 @@ class AFERS:
     def analysis(db_path, model_name = 'VGG-Face', detector_backend = 'opencv', distance_metric = 'cosine', used_models = (), source = 0, time_threshold = 5, frame_threshold = 5):
     
         face_detector = FaceDetector.build_model(detector_backend)
-        print("Detector backend is ", detector_backend)
 
         #------------------------
 
-        input_shape = (224, 224); input_shape_x = input_shape[0]; input_shape_y = input_shape[1]
-
-        text_color = (255,255,255)
-
-        employees = []
+        elderly = []
         #check passed db folder exists
         if os.path.isdir(db_path) == True:
             for r, d, f in os.walk(db_path): # r=root, d=directories, f = files
@@ -62,9 +57,9 @@ class AFERS:
                         #exact_path = os.path.join(r, file)
                         exact_path = r + "/" + file
                         #print(exact_path)
-                        employees.append(exact_path)
+                        elderly.append(exact_path)
 
-        if len(employees) > 0:
+        if len(elderly) > 0:
 
             model = DeepFace.build_model(model_name)
             
@@ -92,22 +87,22 @@ class AFERS:
 
 
 
-        pbar = tqdm(range(0, len(employees)), desc='Finding embeddings')
+        pbar = tqdm(range(0, len(elderly)), desc='Finding embeddings')
 
         #TODO: why don't you store those embeddings in a pickle file similar to find function?
 
         embeddings = []
         #for employee in employees:
         for index in pbar:
-            employee = employees[index]
-            pbar.set_description("Finding embedding for %s" % (employee.split("/")[-1]))
+            elder = elderly[index]
+            pbar.set_description("Finding embedding for %s" % (elder.split("/")[-1]))
             embedding = []
 
             #preprocess_face returns single face. this is expected for source images in db.
-            img = functions.preprocess_face(img = employee, target_size = (input_shape_y, input_shape_x), enforce_detection = False, detector_backend = detector_backend)
+            img = functions.preprocess_face(img = elder, target_size = (input_shape_y, input_shape_x), enforce_detection = False, detector_backend = detector_backend)
             img_representation = model.predict(img)[0,:]
 
-            embedding.append(employee)
+            embedding.append(elder)
             embedding.append(img_representation)
             embeddings.append(embedding)
 
@@ -389,7 +384,7 @@ class AFERS:
                                                 cv2.rectangle(freeze_img,(x+w,y),(x+w+pivot_img_size, y+20),(46,200,255),cv2.FILLED)
                                                 cv2.addWeighted(overlay, opacity, freeze_img, 1 - opacity, 0, freeze_img)
 
-                                                cv2.putText(freeze_img, label, (x+w, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
+                                                #cv2.putText(freeze_img, label, (x+w, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
 
                                                 #connect face and text
                                                 cv2.line(freeze_img,(x+int(w/2), y), (x+3*int(w/4), y-int(pivot_img_size/2)),(67,67,67),1)
@@ -403,7 +398,7 @@ class AFERS:
                                                 cv2.rectangle(freeze_img,(x-pivot_img_size,y+h-20),(x, y+h),(46,200,255),cv2.FILLED)
                                                 cv2.addWeighted(overlay, opacity, freeze_img, 1 - opacity, 0, freeze_img)
 
-                                                cv2.putText(freeze_img, label, (x - pivot_img_size, y+h-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
+                                                #cv2.putText(freeze_img, label, (x - pivot_img_size, y+h-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
 
                                                 #connect face and text
                                                 cv2.line(freeze_img,(x+int(w/2), y+h), (x+int(w/2)-int(w/4), y+h+int(pivot_img_size/2)),(67,67,67),1)
@@ -417,7 +412,7 @@ class AFERS:
                                                 cv2.rectangle(freeze_img,(x- pivot_img_size,y),(x, y+20),(46,200,255),cv2.FILLED)
                                                 cv2.addWeighted(overlay, opacity, freeze_img, 1 - opacity, 0, freeze_img)
 
-                                                cv2.putText(freeze_img, label, (x - pivot_img_size, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
+                                                #cv2.putText(freeze_img, label, (x - pivot_img_size, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
 
                                                 #connect face and text
                                                 cv2.line(freeze_img,(x+int(w/2), y), (x+int(w/2)-int(w/4), y-int(pivot_img_size/2)),(67,67,67),1)
@@ -431,7 +426,7 @@ class AFERS:
                                                 cv2.rectangle(freeze_img,(x+w,y+h-20),(x+w+pivot_img_size, y+h),(46,200,255),cv2.FILLED)
                                                 cv2.addWeighted(overlay, opacity, freeze_img, 1 - opacity, 0, freeze_img)
 
-                                                cv2.putText(freeze_img, label, (x+w, y+h-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
+                                                #cv2.putText(freeze_img, label, (x+w, y+h-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 1)
 
                                                 #connect face and text
                                                 cv2.line(freeze_img,(x+int(w/2), y+h), (x+int(w/2)+int(w/4), y+h+int(pivot_img_size/2)),(67,67,67),1)
