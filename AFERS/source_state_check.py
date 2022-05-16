@@ -83,7 +83,6 @@ def idle_recognition():
     #Until tow seconds of idling  frames are found, it keeps looping
     while idle_frame_check < video_input.get(cv2.CAP_PROP_FPS):
         
-        print(idle_frame_check)
 
         #Gets the frame of the video source
         check, image = video_input.read()
