@@ -6,72 +6,111 @@ from tqdm import tqdm
 import pandas as pd
 import cv2
 import re
+import sys
 
 from deepface import DeepFace
 from deepface.commons import functions, distance as dst
 from deepface.detectors import FaceDetector
 from deepface.extendedmodels import Age
 
-
-
-
-
 class AFERS:
-
 
     def __init__(self):
         self.db_path = "DB"
-        self.load_database_faces(self.db_path)
+        self.load_webcam_stream()
+
+    def __init__(self, db_path):
+        self.db_path = db_path
         self.load_webcam_stream()
 
     def load_database_faces(self, db_path):
-        self.elderly = []
-        if os.path.isdir(db_path) == True:
-            for r, d, f in os.walk(db_path):
-                for file in f:
-                    if ('.jpg' in file):
-                        exact_path = r + "/" + file
-                        self.elderly.append(exact_path)
-        
+        try:
+            self.elderly = []
+            if os.path.isdir(db_path) == True:
+                for r, d, f in os.walk(db_path):
+                    for file in f:
+                        if ('.jpg' in file):
+                            exact_path = r + "/" + file
+                            self.elderly.append(exact_path)
+        except self.elderly is None:
+            print("Error with the db")
+        except Exception():
+            print("Error with the function load_database_faces()")
+            sys.exit(1)
+        finally:
+            print("DB")
+
 
     def load_gender_model(self):
-        return DeepFace.build_model('Gender')
-    
+        try:
+            return DeepFace.build_model('Gender')
+        except Exception():
+            print("Error loading the Gender Model")
+        finally:
+            print("gender")
+
+
     def load_emotion_model(self):
-        return DeepFace.build_model('Emotion')
+        try:
+            return DeepFace.build_model('Emotion')
+        except Exception():
+            print("Error loading the Emotion Model")
+        finally:
+            print("emotion")
+
 
     def load_age_model(self):
-        return DeepFace.build_model('Age')
+        try:
+            return DeepFace.build_model('Age')
+        except Exception():
+            print("Error loading the Age Model")
+        finally:
+            print("age")
+
 
     def load_webcam_stream(self):
-        self.streaming = cv2.VideoCapture(0)
-        self.input_shape_x = int(self.streaming.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.input_shape_y = int(self.streaming.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.input_shape = (self.input_shape_x, self.input_shape_y)
-        self.input_shape = tuple(self.input_shape)
+        try:
+            self.streaming = cv2.VideoCapture(0)
+            self.input_shape_x = int(self.streaming.get(cv2.CAP_PROP_FRAME_WIDTH))
+            self.input_shape_y = int(self.streaming.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            self.input_shape = (self.input_shape_x, self.input_shape_y)
+            self.input_shape = tuple(self.input_shape)
+        except Exception():
+            print("Error loading the webcam")
+            sys.exit(1)
+        finally:
+            print("webcam")
+
 
     def preprocessing(self):
-        pbar = tqdm(range(0, len(self.elderly)), desc='Finding embeddings')
+        try:
+            pbar = tqdm(range(0, len(self.elderly)), desc='Finding embeddings')
 
-        #preprocessing delle facce nel DB
-        embeddings = []
-        #for employee in employees:
-        for index in pbar:
-            elder = self.elderly[index]
-            pbar.set_description("Finding embedding for %s" % (elder.split("/")[-1]))
-            embedding = []
+            #preprocessing delle facce nel DB
+            embeddings = []
+            #for employee in employees:
+            for index in range(0, len(self.elderly)):
+                elder = self.elderly[index]
+                pbar.set_description("Finding embedding for %s" % (elder.split("/")[-1]))
+                embedding = []
 
-            #preprocess_face returns single face. this is expected for source images in db.
-            img = functions.preprocess_face(img = elder, target_size = (self.input_shape_y, self.input_shape_x), enforce_detection = False, detector_backend = 'opencv')
-            img_representation = self.models.predict(img)[0,:]
+                #preprocess_face returns single face. this is expected for source images in db.
+                img = functions.preprocess_face(img = elder, target_size = (self.input_shape_y, self.input_shape_x), enforce_detection = False, detector_backend = 'opencv')
+                img_representation = self.models.predict(img)[0,:]
 
-            embedding.append(elder)
-            embedding.append(img_representation)
-            embeddings.append(embedding)
+                embedding.append(elder)
+                embedding.append(img_representation)
+                embeddings.append(embedding)
 
-        df = pd.DataFrame(embeddings, columns = ['elder', 'embedding'])
-        df['distance_metric'] = 'cosine'
-        return
+            df = pd.DataFrame(embeddings, columns = ['elder', 'embedding'])
+            df['distance_metric'] = 'cosine'
+            return embeddings
+        except Exception():
+            print("Error while preprocessing")
+            sys.exit(1)
+        finally:
+            print("pro")
+
 
     def analysis(self, model_name = 'VGG-Face', detector_backend = 'opencv', distance_metric = 'cosine', used_models = (), source = 0, time_threshold = 5, frame_threshold = 5):
         
@@ -100,16 +139,19 @@ class AFERS:
 
             if "Emotion" in used_models:
                 emotion_model = self.load_emotion_model()
+                print("Emo load")
 
             elif "Age" in used_models:
                 age_model = self.load_age_model()
+                print("Age Load")
 
             elif "Gender" in used_models:
                 gender_model = self.load_gender_model()
+                print("Gen Load")
         
         if elderly is not None:
             embbeddings = self.preprocessing()
-
+            print("PRO loading")
 
         #------------------------------------------------------
 
@@ -118,7 +160,6 @@ class AFERS:
         face_detected = False
         face_included_frames = 0 #freeze screen if face detected sequantially 5 frames
         freezed_frame = 0
-        tic = time.time()
 
         #Loop infinito per la lettura del video
         while(True):
