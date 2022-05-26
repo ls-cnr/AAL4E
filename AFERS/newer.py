@@ -14,10 +14,16 @@ from deepface.extendedmodels import Age
 class Globals:
 
     def __init__(self):
-        self.backend_model = []
-        self.emotion_model = []
-        self.age_model = []
-        self.gender_model = []
+        self.backend_model = None
+        self.emotion_model = None
+        self.age_model = None
+        self.gender_model = None
+        self.input_shape  = (0,0)
+        self.input_shape_x = 0
+        self.input_shape_y = 0
+        self.face_detector = None
+        self.model = None
+
         self.load_webcam_stream()
 
     #Loading Database
@@ -31,6 +37,13 @@ class Globals:
                         if('.jpg' in file):
                             exact_path = r + "/" + file
                             self.elderly.append(exact_path)
+                if self.elderly is None:
+                    sys.exit(1)
+                print("load_database_faces function has ended")
+            else:
+                print(os.getcwd() + db_path)
+                print("Specified path not working. Exiting...")
+                sys.exit(1)
         except OSError as ose:
             print("Error loading the database")
             print(ose)
@@ -46,6 +59,8 @@ class Globals:
         try:
             if self.gender_model is None:
                 self.gender_model = DeepFace.build_model('Gender')
+                if self.gender_model is None:
+                    sys.exit(1)
         except Exception as e:
             print("Error loading the gender model")
             print(e)
@@ -58,6 +73,8 @@ class Globals:
         try:
             if self.age_model is None:
                 self.age_model = DeepFace.build_model('Age')
+                if self.age_model is None:
+                    sys.exit(1)
         except Exception as e:
             print("Error loading the age model")
             print(e)
@@ -70,6 +87,8 @@ class Globals:
         try:
             if self.emotion_model is None:
                 self.emotion_model = DeepFace.build_model('Emotion')
+                if self.emotion_model is None:
+                    sys.exit(1)
         except Exception as e:
             print("Error loading the emotion model")
             sys.exit(1)
@@ -96,12 +115,17 @@ class Globals:
         try:
             if self.backend_model is None:
                 self.backend_model = FaceDetector.build_model(detector_backend)
+            if self.backend_model is None:
+                print("Backend problem")
+                sys.exit(1)
+            print(self.backend_model)
         except Exception as e:
             print("Error building the backend model")
             print(e)
             sys.exit(1)
-        finally:
-            print("build_backend_model function has ended")
+        except self.backend_model is not None:
+            print("cazzone, non hai creato il modello")
+            sys.exit(1)
 
 
     #Model building
@@ -109,12 +133,15 @@ class Globals:
         try:
             if self.model is None:
                 self.model = DeepFace.build_model(model)
-        except Exception as e:
-            print("Error building ", model, " model")
-            print(e)
-        finally:
+            if self.model is None:
+                sys.exit(1)
+            print(self.backend_model)
             print("build_model function has ended")
-
+        except Exception as e:
+            print("Error building", model, "model")
+            print(e)
+            sys.exit(1)
+            
 
     #Preprocessing
     def preprocessing(self):
@@ -126,7 +153,7 @@ class Globals:
                 embedding = []
 
                 img = functions.preprocess_face(img = elder, target_size = self.input_shape, enforce_detection = False, detector_backend = 'opencv')
-                img_representation = self.models.predict(img)[0,:]
+                img_representation = self.model.predict(img)[0,:]
 
                 embedding.append(elder)
                 embedding.append(img_representation)
@@ -136,7 +163,10 @@ class Globals:
             embeddings_df['distance_metric'] = 'cosine'
 
             print("preprocessing function has ended")
-            return embeddings_df
+            if embeddings_df is None:
+                sys.exit(1)
+            else:
+                return embeddings_df
         except Exception as e:
             print("Error while preprocessing")
             print(e)
@@ -149,23 +179,26 @@ class AFERS:
         global_functions = Globals()
         result = pandas.DataFrame()
 
-        face_detector = global_functions.build_backend_model(detector_backend=detector_backend)
+        global_functions.model = DeepFace.build_model(model_name)
+        if global_functions.model is None:
+            sys.exit(1)
+        else:
+            print(global_functions.model)
+        global_functions.build_backend_model(detector_backend=detector_backend)
 
-        elderly = global_functions.load_database_faces(db_path=db_path)
+        global_functions.load_database_faces(db_path=db_path)
 
-        if elderly is not None:
-
-            model = global_functions.build_model(model=model_name)
-
-            input_shape = functions.find_input_shape(model)
-            input_shape_x = input_shape[0]
-            input_shape_y = input_shape[1]
+        #Works Perfectly
+        if global_functions.elderly is not None:
+            
+            global_functions.input_shape = functions.find_input_shape(global_functions.model)
+            global_functions.input_shape_x = global_functions.input_shape[0]
+            global_functions.input_shape_y = global_functions.input_shape[1]
 
             threshold = Distance.findThreshold(model_name, distance_metric)
 
+        #Works Perfectly
         if used_models is not None:
-
-            input(used_models)
             if 'Emotion' in used_models:
                 emotion_model = global_functions.load_emotion_model()
             if 'Age' in used_models:
@@ -174,43 +207,42 @@ class AFERS:
                 gender_model = global_functions.load_gender_model()
 
         
-        #it does not enter here
-        if elderly is not None:
+        #Works Perfectly
+        if global_functions.elderly is not None:
             embeddings = global_functions.preprocessing()
 
         freeze = False
         face_detected = False
         face_included_frames = 0
-        freezed_frame = 0
 
-        iteration = 0
+        dec_copy = global_functions.backend_model
+        print(dec_copy)
 
-        while(result.empty):
-            print("Iteration number ", iteration)
-            print(result)
-            iteration = iteration + 1
-            input()
+        while(True):
 
             ret, image = global_functions.streaming.read()
 
             if image is None:
                 break
+            
+            
 
             image_copy = image.copy()
-
+            faces = []
             try:
-                faces = FaceDetector.detect_faces(face_detector, detector_backend, image, align = False)
-                print["face detected", faces]
+                faces = FaceDetector.detect_faces(face_detector= dec_copy, detector_backend= detector_backend, img=image, align = False)
             except:
                 faces = []
-                print("No face detected in this frame")
-                face_included_frames = 0
             
+            if len(faces) == 0:
+                face_included_frames = 0
+
             detected_faces = []
             face_index = 0
 
             for faces, (x, y, w, h) in faces:
                 if w > 130:
+                    print("face detected!")
                     face_detected = True
                     if face_index == 0:
                         face_included_frames = face_included_frames + 1
@@ -222,13 +254,15 @@ class AFERS:
                 base_image = image_copy.copy()
                 detected_faces_final = detected_faces.copy()
 
+
                 for detected_face in detected_faces_final:
                     x = detected_face[0]; y = detected_face[1]
                     w = detected_face[2]; h = detected_face[3]
 
-                    custom_face = base_image[y:y+h, x:x+w]   
+                    custom_face = base_image[y:y+h, x:x+w]
 
-                    face_224 = functions.preprocess_face(img= custom_face, target_size=( 224, 224), grayscale= False, detector_backend= 'opencv')
+                    face_224 = functions.preprocess_face(img= custom_face, target_size=(224, 224), grayscale= False, enforce_detection=False, detector_backend=detector_backend)
+                    
                     if used_models == True:
                         if 'Emotion' in used_models:
 
@@ -251,14 +285,14 @@ class AFERS:
                             emotion_df = emotion_df.sort_values(by=['Score'], ascending=False).reset_index(drop=True)
 
                             result = result.append({'Emotions' : emotion_df}, ignore_index=True)
-                        
+                            print(result)
                         if 'Age' in used_models:
 
                             age_predictions = age_model.predict(face_224)[0,:]
                             apparent_age = Age.findApparentAge(age_predictions)
 
                             result = result.append({'Age' : apparent_age}, ignore_index= True)
-
+                            print(result)
                         if 'Gender' in used_models:
                             gender_prediction = gender_model.predict(face_224)[0,:]
 
@@ -268,15 +302,15 @@ class AFERS:
                                 gender = 'M'
 
                             result = result.append({'Gender': gender}, ignore_index=True)
-                    
+                            print(result)
 
-                    custom_face = functions.preprocess_face(img= custom_face, target_size= (input_shape_x, input_shape_y), enforce_detection= False, detector_backend= 'opencv')
+                    custom_face = functions.preprocess_face(img= custom_face, target_size= (global_functions.input_shape_x, global_functions.input_shape_y), enforce_detection= False, detector_backend= 'opencv')
 
 
-                    if custom_face.shape[1:3] == input_shape:
+                    if custom_face.shape[1:3] == global_functions.input_shape:
 
-                        if detected_face.shape[0] > 0:
-                            img1_representation = model.predict(custom_face)[0,:]
+                        if embeddings.shape[0] > 0:
+                            img1_representation = global_functions.model.predict(custom_face)[0,:]
 
                             def findDistance(row):
                                 embeddings = row['distance_metric']
@@ -306,5 +340,5 @@ class AFERS:
                                 result.append({'Person' : label}, ignore_index=True)
 
 
-        input("Does it arrrive to the end?")          
+        input(result)          
         return result
