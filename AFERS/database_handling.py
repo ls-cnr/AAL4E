@@ -2,6 +2,9 @@ from datetime import datetime, timedelta
 import sqlite3
 import os
 from os.path import exists
+import pandas
+import codecs
+import pickle
 
 #Class for the Database creation and manipulation
 class DataBaseHandler:
@@ -48,6 +51,7 @@ class DataBaseHandler:
                                 name TEXT NOT NULL,
                                 surname TEXT NOT NULL,
                                 picture_location TEXT NOT NULL,
+                                df BLOB,
                                 PRIMARY KEY (name, surname)
                             );
                             """)
@@ -78,7 +82,7 @@ class DataBaseHandler:
     def DBHElderlyCommit(self, name, surname, picture):
         
         #Query to the database
-        self.cursor.execute("INSERT INTO Elders (name, surname, picture_location) VALUES ('{}' , '{}', '{}')".format(name.capitalize(), surname.capitalize(), picture))
+        self.cursor.execute("INSERT INTO Elders (name, surname, picture_location, df) VALUES ('{}' , '{}', '{}')".format(name.capitalize(), surname.capitalize(), picture))
 
 
         #Committing the change through the connection
@@ -220,6 +224,52 @@ class DataBaseHandler:
         #Returning the result of the query as a simple binary value
         return self.cursor.fetchone()[0]
     
+
+    #Returns the dictionary where the weights of preferences relative to a certain person are stored
+    def DBHGetBlob(self, name, surname):
+
+        #Gets the the id relative to the person
+        id = self.DBHGetProgressiveID(name, surname)
+
+        #Query
+        self.cursor.execute("""
+                            SELECT df
+                            FROM Elder
+                            WHERE rowid = {}
+                            """.format(id))
+
+        #Decrypting the query result
+        return self.DBHDecryptBlob(self.cursor.fetchall)
+
+    
+    #Updates the dictionary where the weights of preferences relative to a certain person are stored
+    def DBHUpdateBlob(self, name, surname, df):
+
+        #Gets the the id relative to the person
+        id = self.DBHGetProgressiveID(name, surname)
+
+        #Encrypting the data we have to store
+        pickled = self.DBHEncryptBlob(df)
+
+        #Query
+        self.cursor.execute("""
+                            UPDATE Elder
+                            SET df = {}
+                            WHERE rowid = {}'
+                            """.format(pickled, id))
+
+        #Committing the changes through the connection
+        self.connection.commit()
+    
+
+    #Encrypts the Dictionary into a BLOB format
+    def DBHEncryptBlob(self, dictionary):
+        return codecs.encode(pickle.dumps(dictionary), "base64").decode()
+
+    #Decrypt the BLOB into a Dictionary
+    def DBHDecryptBlob(self, pickle):
+        return pickle.loads(codecs.decode(pickle[0][1].encode(), "base64"))
+
 
     #Connection closing
     def DBHClose(self):
