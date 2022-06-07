@@ -1,6 +1,6 @@
-from pickletools import uint8
-import cv2, numpy
-from cv2 import blur
+import cv2
+import numpy
+
 '''
     Script for the recognition of a state of idling or the presence of motion in a scene. The video used can be real live captured using "dev/video0" source 
 '''
