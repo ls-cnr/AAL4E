@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 import sqlite3
 import os
 from os.path import exists
-import pandas
 import codecs
 import pickle
 
@@ -265,6 +264,7 @@ class DataBaseHandler:
     #Encrypts the Dictionary into a BLOB format
     def DBHEncryptBlob(self, dictionary):
         return codecs.encode(pickle.dumps(dictionary), "base64").decode()
+
 
     #Decrypt the BLOB into a Dictionary
     def DBHDecryptBlob(self, pickle):
