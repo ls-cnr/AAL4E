@@ -11,7 +11,7 @@ from deepface.detectors import FaceDetector
 class Globals:
 
     #Initialization of the object
-    def __init__(self):
+    def __init__(self, database_path):
 
         #Important properties set to zero at the beginning
         self.backend_model = None
@@ -23,23 +23,24 @@ class Globals:
         self.input_shape_y = 0
         self.face_detector = None
         self.model = None
+        self.database_path = database_path
 
         #Loading the stream
         self.load_webcam_stream()
 
 
     #Loading the Database
-    def load_database_faces(self, db_path):
+    def load_database_faces(self):
         #If the Database is loaded, continue; otherwise kill the program after printing the exception
         try:
             #The database will be stored here
             self.elderly = []
 
             #If the path exists, continue; otherwise kill the program
-            if os.path.isdir(db_path) == True:
+            if os.path.isdir(self.database_path) == True:
 
                 #Gets all the relevant information about the directory
-                for r, d, f in os.walk(db_path):
+                for r, d, f in os.walk(self.database_path):
 
                     #Add all files with their exact path to the list of people recognised
                     for file in f:
@@ -52,7 +53,7 @@ class Globals:
                     sys.exit(1)
 
             else:
-                print(os.getcwd() + db_path)
+                print(self.database_path)
                 print("Specified path not working. Exiting...")
                 sys.exit(1)
 
