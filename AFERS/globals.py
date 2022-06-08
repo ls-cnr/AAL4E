@@ -2,6 +2,9 @@ import os
 import cv2
 import sys
 import pandas
+from gtts import gTTS
+from playsound import playsound
+import speech_recognition
 
 from deepface import DeepFace
 from deepface.commons import functions
@@ -24,6 +27,8 @@ class Globals:
         self.face_detector = None
         self.model = None
         self.database_path = database_path
+
+        self.recognizer_instance = speech_recognition.Recognizer()
 
         #Loading the stream
         self.load_webcam_stream()
@@ -194,3 +199,35 @@ class Globals:
         except Exception as e:
             print(e)
             sys.exit(1)
+
+
+    #Speech Analysis method
+    def speech_analysis(self):
+
+        with speech_recognition.Microphone() as source:
+            #Reduce the Ambient Noise of the Microphone (taking a second of environmental noise takes a second or so)
+            self.recognizer_instance.adjust_for_ambient_noise(source)
+
+            #Listen to what the user has to see
+            audio = self.recognizer_instance.listen(source)
+        try:
+            #Contact the Google Speech Recogniser to analyse the audio produced
+            text = self.recognizer_instance.recognize_google(audio, language="it-IT")
+
+            #Return the result as a lower case text
+            return text.lower()
+        
+        #If the request to the Google Speech Recogniser happens to fail, throw an Exception
+        except Exception as e:
+            print(e)
+    
+
+    #Text To Speech Interface
+    def TTSInterface(text):
+        #Reference to the class gTTS()
+        tts = gTTS(text, lang='it')
+        
+        #Save the audio as temporary MP3 file in order to call the playsound() function, then delete the file
+        tts.save("dump.mp3")
+        playsound("dump.mp3")
+        os.remove("dump.mp3")
