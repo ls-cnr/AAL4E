@@ -126,8 +126,8 @@ class Globals:
         try:
             self.streaming = cv2.VideoCapture(0)
             #Get the shape of the stream
-            temporary_shape = (int(self.streaming.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.streaming.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-            self.input_shape = tuple(temporary_shape)
+            self.input_shape = tuple(int(self.streaming.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.streaming.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+            
 
         except Exception as e:
             print(e)
