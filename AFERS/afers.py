@@ -20,14 +20,14 @@ class AFERS:
         self.global_functions.model = DeepFace.build_model(model_name)
         if self.global_functions.model is None:
             sys.exit(1)
-        print("Model built")
+
         #Build the backend model
         self.global_functions.build_backend_model(detector_backend=detector_backend)
-        print("Backend Model built")
+
 
         #Load the database
         self.global_functions.load_database_faces()
-        print("database faces detected")
+
 
         #If there are some faces in our database find the input shape and set a threshold for the defined model name and distance metric
         if self.global_functions.elderly is not None:
@@ -37,19 +37,19 @@ class AFERS:
             self.global_functions.input_shape_y = self.global_functions.input_shape[1]
 
             self.threshold = Distance.findThreshold(model_name, distance_metric)
-            print("part of the preprocess was made")
+
 
         #Load the models for Emotion or Age or Gender if those has been specified in the function parameters
         if used_models is not None:
             if 'Emotion' in used_models:
                 self.global_functions.load_emotion_model()
-                print("Emotion model loaded")
+
             if 'Age' in used_models:
                 self.global_functions.load_age_model()
-                print("Age model loaded")
+
             if 'Gender' in used_models:
                 self.global_functions.load_gender_model()
-                print("Gender model loaded")
+
 
         
         #Start preprocessing the images in the database if it is not empty
