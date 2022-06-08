@@ -2,70 +2,77 @@ import sys
 import numpy
 import pandas
 import re
+import pandas
 
 from deepface import DeepFace
 from deepface.commons import functions, distance as Distance
 from deepface.detectors import FaceDetector
 from deepface.extendedmodels import Age
 
-from globals import Globals
 
 class AFERS:
 
-    #Function to analyse the informations took from the stream
-    def analysis(model_name = 'VGG-Face', detector_backend = 'opencv', distance_metric = 'cosine', used_models = [], db_path='DB', frame_threshold = 5):
-
-        #Object to call the common functions used in this program
-        global_functions = Globals()
-        #Dictionary that will be returned later with all the information gotten
-        result = {}
+    def __init__(self, globals_pointer, model_name = 'VGG-Face',detector_backend = 'opencv', distance_metric= 'cosine', used_models = ['Emotion', 'Age', 'Gender']):
+    #Object to call the common functions used in this program
+        self.global_functions = globals_pointer
         
         #Build the model, if something goes wrong, exit
-        global_functions.model = DeepFace.build_model(model_name)
-        if global_functions.model is None:
+        self.global_functions.model = DeepFace.build_model(model_name)
+        if self.global_functions.model is None:
             sys.exit(1)
-
+        print("Model built")
         #Build the backend model
-        global_functions.build_backend_model(detector_backend=detector_backend)
+        self.global_functions.build_backend_model(detector_backend=detector_backend)
+        print("Backend Model built")
 
         #Load the database
-        global_functions.load_database_faces(db_path=db_path)
+        self.global_functions.load_database_faces()
+        print("database faces detected")
 
         #If there are some faces in our database find the input shape and set a threshold for the defined model name and distance metric
-        if global_functions.elderly is not None:
+        if self.global_functions.elderly is not None:
             
-            global_functions.input_shape = functions.find_input_shape(global_functions.model)
-            global_functions.input_shape_x = global_functions.input_shape[0]
-            global_functions.input_shape_y = global_functions.input_shape[1]
+            self.global_functions.input_shape = functions.find_input_shape(self.global_functions.model)
+            self.global_functions.input_shape_x = self.global_functions.input_shape[0]
+            self.global_functions.input_shape_y = self.global_functions.input_shape[1]
 
-            threshold = Distance.findThreshold(model_name, distance_metric)
+            self.threshold = Distance.findThreshold(model_name, distance_metric)
+            print("part of the preprocess was made")
 
         #Load the models for Emotion or Age or Gender if those has been specified in the function parameters
         if used_models is not None:
             if 'Emotion' in used_models:
-                global_functions.load_emotion_model()
+                self.global_functions.load_emotion_model()
+                print("Emotion model loaded")
             if 'Age' in used_models:
-                global_functions.load_age_model()
+                self.global_functions.load_age_model()
+                print("Age model loaded")
             if 'Gender' in used_models:
-                global_functions.load_gender_model()
+                self.global_functions.load_gender_model()
+                print("Gender model loaded")
 
         
         #Start preprocessing the images in the database if it is not empty
-        if global_functions.elderly is not None:
-            embeddings = global_functions.preprocessing()
+        if self.global_functions.elderly is not None:
+            self.embeddings = self.global_functions.preprocessing()
+            print("faces were preprocessed")
         
+
+    #Function to analyse the informations took from the stream
+    def analysis(self, detector_backend = 'opencv', distance_metric = 'cosine', used_models = [], frame_threshold = 5):
+        
+
+        #Dictionary that will be returned later with all the information obtained
+        result = {}
+
         #Variable used to exit the following while cycle
         face_detected = False
         face_included_frames = 0
 
-        #Copy of the Backend Model
-        dec_copy = global_functions.backend_model
-
         #While loop that exits only when a face is recognised for exactly <frame_threshold> frames
         while(face_included_frames != frame_threshold):
-
             #Get the frame and break if it is not possible to get it
-            ret, image = global_functions.streaming.read()
+            ret, image = self.global_functions.streaming.read()
             if image is None:
                 break
 
@@ -77,9 +84,10 @@ class AFERS:
 
             #Try to pick faces, if not possible make the face list void
             try:
-                faces = FaceDetector.detect_faces(face_detector= dec_copy, detector_backend= detector_backend, img=image, align = False)
+                faces = FaceDetector.detect_faces(face_detector = self.global_functions.backend_model, detector_backend = detector_backend, img = image, align = False)
             except:
                 faces = []
+
             
             #If there are not faces present in this frame, reset the variable that allows us to exit the loop and proceed with the code 
             if len(faces) == 0:
@@ -128,7 +136,6 @@ class AFERS:
 
                     #Emotion Model Scope
                     if 'Emotion' in used_models:
-                        
                         #Preprocessing the face
                         gray_img = functions.preprocess_face(img=custom_face, target_size=(48,48), grayscale=True, enforce_detection=False, detector_backend=detector_backend)
                         
@@ -136,7 +143,7 @@ class AFERS:
                         emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
                         #Make the prediction
-                        emotion_predictions = global_functions.emotion_model.predict(gray_img)[0,:]
+                        emotion_predictions = self.global_functions.emotion_model.predict(gray_img)[0,:]
 
                         sum_of_predictions = emotion_predictions.sum()
 
@@ -166,7 +173,7 @@ class AFERS:
                     if 'Age' in used_models:
                         
                         #Make the prediction and find the apparent age
-                        age_predictions = global_functions.age_model.predict(face_224)[0,:]
+                        age_predictions = self.global_functions.age_model.predict(face_224)[0,:]
                         apparent_age = Age.findApparentAge(age_predictions)
 
                         #Add ther result of the model to the dictionary
@@ -176,7 +183,7 @@ class AFERS:
                     if 'Gender' in used_models:
                         
                         #Make the prediction
-                        gender_prediction = global_functions.gender_model.predict(face_224)[0,:]
+                        gender_prediction = self.global_functions.gender_model.predict(face_224)[0,:]
 
                         #The prediction can have values 0 (female face) or 1 (male face)
                         if numpy.argmax(gender_prediction) == 0:
@@ -188,21 +195,21 @@ class AFERS:
                         result['Gender'] = gender
 
                 #Preprocessing the face
-                custom_face = functions.preprocess_face(img= custom_face, target_size= (global_functions.input_shape_x, global_functions.input_shape_y), enforce_detection= False, detector_backend= 'opencv')
+                custom_face = functions.preprocess_face(img= custom_face, target_size= (self.global_functions.input_shape_x, self.global_functions.input_shape_y), enforce_detection= False, detector_backend= 'opencv')
 
                 #If the face has a certain face
-                if custom_face.shape[1:3] == global_functions.input_shape:
+                if custom_face.shape[1:3] == self.global_functions.input_shape:
                     
                     #If the shape of the embeddings is greater than 0
-                    if embeddings.shape[0] > 0:
+                    if self.global_functions.embeddings_df.shape[0] > 0:
 
                         #Predict the identity
-                        img1_representation = global_functions.model.predict(custom_face)[0,:]
+                        img1_representation = self.global_functions.model.predict(custom_face)[0,:]
 
                         #Embedded Function
                         #Gets the distance, relative to the distance metric
                         def findDistance(row):
-                            embeddings = row['distance_metric']
+                            distance_metric = row['distance_metric']
                             img2_representation = row['embedding']
 
                             distance = 1000
@@ -226,7 +233,7 @@ class AFERS:
                         best_distance = candidate['distance']
 
 
-                        if best_distance <= threshold:
+                        if best_distance <= self.threshold:
                             #Gets the name of the person
                             label = elder_name.split("/")[-1].replace(".jpg", "")
                             label = re.sub('[0-9]', '', label)
@@ -238,3 +245,4 @@ class AFERS:
                                 sys.exit(1)
         
         return result
+
