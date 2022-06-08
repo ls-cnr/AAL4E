@@ -5,35 +5,19 @@ import numpy
     Script for the recognition of a state of idling or the presence of motion in a scene. The video used can be real live captured using "dev/video0" source 
 '''
 
-#Initialization of the stream
-def video_init():
-    #Capturing video from /dev/video0 source
-    try:
-        video_input = cv2.VideoCapture(0)
-    except RuntimeError:#Notice if there's no possibility to open the stream due to it being busy or unaccessible
-        raise RuntimeError("Unable to open video stream")
-    
-    #Gets source resolution
-    video_height = int(video_input.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    video_width = int(video_input.get(cv2.CAP_PROP_FRAME_WIDTH))
-
-    #Returning the source and its resolution
-    return video_input, video_height, video_width
-
 #This method recognise if there's a change in the scene and exits, otherwise it loops indefinitely
-def motion_recognition():
+def motion_recognition(globals_pointer):
 
     #Definition of a static background
     static_back = None
     
-    #Video source
-    video_input, video_height, video_width = video_init()
+
 
     #Until the exit condition inside this block is verified, it loops indefinitely
     while True:
         
         #Gets the frame of the video source
-        check, image = video_input.read()
+        check, image = globals_pointer.streaming.read()
 
 
         #Switching the color space to Grayscale to ease of use 
@@ -63,9 +47,10 @@ def motion_recognition():
                 continue
             return 1 #If an area with relevant area is found a motion is detected
 
-#STILL NOT PROPERLY WORKING
+
+
 #This method recognise if there's no change in the scene for a fixed number of frames and exits, otherwise it loops indefinitely
-def idle_recognition():
+def idle_recognition(globals_pointer):
 
     #Definition of a static background and a variable to store the last analysed frame
     static_back = None
@@ -75,10 +60,10 @@ def idle_recognition():
     idle_frame_check = 0
 
     #Gets the video source and its resolution
-    video_input, video_height, video_width = video_init()
+    video_input = globals_pointer.streaming
 
     #Gets the frame area for later calculations
-    frame_area = video_height * video_width
+    frame_area = int(video_input.get(cv2.CAP_PROP_FRAME_WIDTH)) * int(video_input.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     #Until tow seconds of idling  frames are found, it keeps looping
     while idle_frame_check < video_input.get(cv2.CAP_PROP_FPS):
