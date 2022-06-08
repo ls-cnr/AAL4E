@@ -126,7 +126,7 @@ class Globals:
         try:
             self.streaming = cv2.VideoCapture(0)
             #Get the shape of the stream
-            self.input_shape = tuple(int(self.streaming.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.streaming.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+            self.input_shape = tuple((int(self.streaming.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.streaming.get(cv2.CAP_PROP_FRAME_HEIGHT))))
             
 
         except Exception as e:
@@ -188,14 +188,8 @@ class Globals:
                 embeddings.append(embedding)
             
             #Creating a dataframe for later to be returned
-            embeddings_df = pandas.DataFrame(embeddings, columns= ['elder', 'embedding'])
-            embeddings_df['distance_metric'] = 'cosine'
-
-            #If the dataframe happens to be blank, kills the program
-            if embeddings_df is None:
-                sys.exit(1)
-            else:
-                return embeddings_df
+            self.embeddings_df = pandas.DataFrame(embeddings, columns= ['elder', 'embedding'])
+            self.embeddings_df['distance_metric'] = 'cosine'
 
         except Exception as e:
             print(e)
