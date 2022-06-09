@@ -4,6 +4,7 @@ import sys
 import pandas
 from gtts import gTTS
 from playsound import playsound
+from database_handling import DataBaseHandler
 import speech_recognition
 
 from deepface import DeepFace
@@ -202,11 +203,15 @@ class Globals:
 
 
     #Speech Analysis method
-    def speech_analysis(self):
+    def speech_analysis(self, tts='', lang='en'):
 
         with speech_recognition.Microphone() as source:
             #Reduce the Ambient Noise of the Microphone (taking a second of environmental noise takes a second or so)
             self.recognizer_instance.adjust_for_ambient_noise(source)
+
+            #If a text is passed as a parameter, call the TTSInterface in order to say it
+            if tts:
+                self.TTSInterface(tts, lang=lang)
 
             #Listen to what the user has to see
             audio = self.recognizer_instance.listen(source)
@@ -223,11 +228,45 @@ class Globals:
     
 
     #Text To Speech Interface
-    def TTSInterface(text):
+    def TTSInterface(text, lang='en'):
         #Reference to the class gTTS()
-        tts = gTTS(text, lang='it')
+        tts = gTTS(text, lang=lang)
         
         #Save the audio as temporary MP3 file in order to call the playsound() function, then delete the file
         tts.save("dump.mp3")
         playsound("dump.mp3")
         os.remove("dump.mp3")
+    
+
+    #Embedding of the Registration Module
+    def registration(self, name, surname, frame):
+        try:
+            #Get the path of the folder for any single person as /<root_folder>/DB/<name>-<surname>/
+            db_path = self.database_path
+            folder_name = db_path + name.lower() + '-' + surname.lower() + '/'
+
+            #Initialize the connection to the database
+            d = DataBaseHandler()
+
+            #If the person's entry does not exists in the database, create it
+            if not d.DBHElderExists(name=name, surname=surname):
+                d.DBHElderlyCommit(name=name, surname=surname, picture=folder_name)
+
+            #If the path does not exists, create it
+            if not os.path.isdir(folder_name):
+                os.makedirs(folder_name)
+
+            #Check if the folder is empty. If it is, then write the image
+            if len(os.listdir(folder_name)) == 0:
+                cv2.imwrite(name.lower() + '_' + surname.lower() + '_1'+ '.jpg', frame)
+                
+            else:
+                #If the folder is not empty, ask if you want to add another picture
+                answer = self.speech_analysis(tts="Do you want to add another image?", lang='en')
+                if answer is "yes":
+                    cv2.imwrite(name.lower() + '_' + surname.lower() + '_' + (len(os.listdir(folder_name))) + '.jpg', frame)
+                else:
+                    self.TTSInterface("Image saving aborted", lang='en')
+            d.DBHClose()
+        except Exception as e:
+            print(e)
