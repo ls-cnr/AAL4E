@@ -50,7 +50,7 @@ class DataBaseHandler:
                                 name TEXT NOT NULL,
                                 surname TEXT NOT NULL,
                                 picture_location TEXT NOT NULL,
-                                df BLOB,
+                                weight BLOB,
                                 PRIMARY KEY (name, surname)
                             );
                             """)
@@ -232,7 +232,7 @@ class DataBaseHandler:
 
         #Query
         self.cursor.execute("""
-                            SELECT df
+                            SELECT weight
                             FROM Elder
                             WHERE rowid = {}
                             """.format(id))
@@ -253,7 +253,7 @@ class DataBaseHandler:
         #Query
         self.cursor.execute("""
                             UPDATE Elder
-                            SET df = {}
+                            SET weight = {}
                             WHERE rowid = {}'
                             """.format(pickled, id))
 
