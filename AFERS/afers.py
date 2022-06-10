@@ -12,6 +12,7 @@ from deepface.extendedmodels import Age
 
 class AFERS:
 
+    #Initialization of the AFERS objects. Calling important Functions in the Globals class
     def __init__(self, globals_pointer, model_name = 'VGG-Face',detector_backend = 'opencv', distance_metric= 'cosine', used_models = ['Emotion', 'Age', 'Gender']):
     #Object to call the common functions used in this program
         self.global_functions = globals_pointer
