@@ -49,7 +49,7 @@ class AFERS:
 
             if 'Gender' in used_models:
                 self.global_functions.load_gender_model()
-
+    
 
         
         #Start preprocessing the images in the database if it is not empty
