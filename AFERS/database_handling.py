@@ -51,6 +51,7 @@ class DataBaseHandler:
                                 surname TEXT NOT NULL,
                                 picture_location TEXT NOT NULL,
                                 weight BLOB,
+                                training_variable INTEGER NOT NULL,
                                 PRIMARY KEY (name, surname)
                             );
                             """)
@@ -79,9 +80,16 @@ class DataBaseHandler:
 
     #Definition of the query to insert a new person in the Elder table
     def DBHElderlyCommit(self, name, surname, picture):
+        dictionary = {}
+        tags = ("rain", "art", "sky", "waterfall", "pets", "nature", "landscape", "forest", "beach", "flowers", "countryside",
+                "rain_v", "art_v", "sky_v", "waterfall_v", "pets_v", "nature_v", "landscape_v", "forest_v", "beach_v", "flowers_v", "countryside_v")
         
+        for tag in tags:
+            dictionary[tag] = 0
+
+        blob = self.DBHEncryptBlob(dictionary=dictionary)
         #Query to the database
-        self.cursor.execute("INSERT INTO Elders (name, surname, picture_location, df) VALUES ('{}' , '{}', '{}')".format(name.capitalize(), surname.capitalize(), picture))
+        self.cursor.execute("INSERT INTO Elders (name, surname, picture_location, df, training_variable) VALUES (?, ?, ?, ?, 0)" , (name, surname, picture, blob))
 
 
         #Committing the change through the connection
@@ -225,24 +233,24 @@ class DataBaseHandler:
     
 
     #Returns the dictionary where the weights of preferences relative to a certain person are stored
-    def DBHGetBlob(self, name, surname):
+    def DBHGetBlobAndVariable(self, name, surname):
 
         #Gets the the id relative to the person
         id = self.DBHGetProgressiveID(name, surname)
 
         #Query
         self.cursor.execute("""
-                            SELECT weight
+                            SELECT weight, training_variable
                             FROM Elder
                             WHERE rowid = {}
                             """.format(id))
 
         #Decrypting the query result
-        return self.DBHDecryptBlob(self.cursor.fetchall)
+        return self.DBHDecryptBlob(self.cursor.fetchall[0][0]), self.cursor.fetchall[0][1]
 
     
     #Updates the dictionary where the weights of preferences relative to a certain person are stored
-    def DBHUpdateBlob(self, name, surname, df):
+    def DBHUpdateBlobAndVariable(self, name, surname, df, variable):
 
         #Gets the the id relative to the person
         id = self.DBHGetProgressiveID(name, surname)
@@ -253,9 +261,9 @@ class DataBaseHandler:
         #Query
         self.cursor.execute("""
                             UPDATE Elder
-                            SET weight = {}
+                            SET weight = {} AND training_variable = {}
                             WHERE rowid = {}'
-                            """.format(pickled, id))
+                            """.format(pickled, variable, id))
 
         #Committing the changes through the connection
         self.connection.commit()
