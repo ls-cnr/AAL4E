@@ -29,6 +29,7 @@ class Globals:
         self.face_detector = None
         self.model = None
         self.database_path = database_path
+        self.mediaAPI = '563492ad6f9170000100000192345faa49b644a28763f37812c770a0'
 
         self.recognizer_instance = speech_recognition.Recognizer()
 
@@ -267,7 +268,7 @@ class Globals:
                 else:
                     #If the folder is not empty, ask if you want to add another picture
                     answer = self.speech_analysis(tts="Do you want to add another image?", lang='en')
-                    if answer is "yes":
+                    if answer == "yes":
                         cv2.imwrite(name.lower() + '_' + surname.lower() + '_' + (len(os.listdir(folder_name))) + '.jpg', frame)
                     else:
                         self.TTSInterface("Image saving aborted", lang='en')
