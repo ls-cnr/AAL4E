@@ -106,6 +106,7 @@ class PER:
 
     #Save the results on the emotion analysis just obtained
     def save(self, name, surname, dict):
+        mood = ()
         sa = DataBaseHandler()
         sa.DBHDetectionCommit(name=name, surname=surname, mood = mood, angry=dict.get['Angry'], disgust=dict.get['Disgust'], fear=dict.get['fear'], happiness=dict.get['happiness'], sad=dict.get['sad'], surprise=dict.get['surprise'], neutral=dict.get['neutral'])
         
