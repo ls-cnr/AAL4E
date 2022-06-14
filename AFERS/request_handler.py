@@ -34,7 +34,8 @@ class RequestHandler:
 
     
 
-        """ Private methods """
+
+#""" Private methods """
 
 
     def format_request(self, media):
@@ -115,22 +116,3 @@ class RequestHandler:
             print("API key: {}".format(self.PEXELS_AUTHORIZATION))
             self.request = None
             exit()
-
-
-#-----------------------------------------------------------------------------
-API = '563492ad6f9170000100000192345faa49b644a28763f37812c770a0'
-per = RequestHandler(API)
-#
-per.pexels_request(media='image', query='waterfall', page=1, per_page='2', size='large')
-#
-image_ret = per.format_request(media='image')
-
-pprint(image_ret)
-#
-per.pexels_request(media='video', query='waterfall', page=1, per_page='2', size='large')
-#
-#
-#
-video_ret = per.format_request(media='video')
-
-pprint(video_ret)
