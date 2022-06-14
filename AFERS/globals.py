@@ -16,7 +16,7 @@ from deepface.detectors import FaceDetector
 class Globals:
 
     #Initialization of the object
-    def __init__(self, database_path):
+    def __init__(self, database_path, API):
 
         #Important properties set to zero at the beginning
         self.backend_model = None
@@ -29,7 +29,7 @@ class Globals:
         self.face_detector = None
         self.model = None
         self.database_path = database_path
-        self.mediaAPI = '563492ad6f9170000100000192345faa49b644a28763f37812c770a0'
+        self.mediaAPI = API
 
         self.recognizer_instance = speech_recognition.Recognizer()
 
