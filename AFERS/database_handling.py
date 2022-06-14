@@ -81,11 +81,10 @@ class DataBaseHandler:
     #Definition of the query to insert a new person in the Elder table
     def DBHElderlyCommit(self, name, surname, picture):
         dictionary = {}
-        tags = ("rain", "art", "sky", "waterfall", "pets", "nature", "landscape", "forest", "beach", "flowers", "countryside",
-                "rain_v", "art_v", "sky_v", "waterfall_v", "pets_v", "nature_v", "landscape_v", "forest_v", "beach_v", "flowers_v", "countryside_v")
+        tags = ("rain", "art", "sky", "waterfall", "pets", "nature", "landscape", "forest", "beach", "flowers", "countryside")
         
         for tag in tags:
-            dictionary[tag] = 0
+            dictionary[tag] = 1
 
         blob = self.DBHEncryptBlob(dictionary=dictionary)
         #Query to the database
