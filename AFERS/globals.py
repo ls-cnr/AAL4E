@@ -241,24 +241,28 @@ class Globals:
     
 
     #Embedding of the Registration Module
-    def registration(self, name, surname):
+    def registration(self):
         try:
             #Get the path of the folder for any single person as /<root_folder>/DB/<name>-<surname>/
-            db_path = self.database_path
-            folder_name = db_path + name.lower() + '-' + surname.lower() + '/'
+            name = self.speech_analysis(tts="State your name, wait a moment before speaking", lang='en')
+            surname = self.speech_analysis(tts="State your surname, wait a moment before speaking", lang='en')
+            
 
             #Initialize the connection to the database
             d = DataBaseHandler()
-
+            folder_name = self.database_path + name.replace(' ', '-').lower() + '-' + name.replace(' ', '-').lower() + '/'
+            
             #If the person's entry does not exists in the database, create it
             if not d.DBHElderExists(name=name, surname=surname):
                 d.DBHElderlyCommit(name=name, surname=surname, picture=folder_name)
 
+            name = name.replace(' ', '-').lower()
+            surname = surname.replace(' ', '-').lower()
             #If the path does not exists, create it
             if not os.path.isdir(folder_name):
                 os.makedirs(folder_name)
 
-            self.TTSInterface("Taking a picture in a second. Hold still")
+            self.TTSInterface("Taking a picture. Hold still")
             ret, frame = self.load_webcam_stream.read()
             if ret == True:
                 #Check if the folder is empty. If it is, then write the image
@@ -267,7 +271,7 @@ class Globals:
                     
                 else:
                     #If the folder is not empty, ask if you want to add another picture
-                    answer = self.speech_analysis(tts="Do you want to add another image?", lang='en')
+                    answer = self.speech_analysis(tts="The system recognises you as an user. Do you want to add another image?", lang='en')
                     if answer == "yes":
                         cv2.imwrite(name.lower() + '_' + surname.lower() + '_' + (len(os.listdir(folder_name))) + '.jpg', frame)
                     else:
