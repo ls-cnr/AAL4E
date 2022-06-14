@@ -240,8 +240,10 @@ class AFERS:
                             label = re.sub('[0-9]', '', label)
 
                             try:
+                                split = label.split('_')
                                 #Add ther result of the model to the dictionary
-                                result['Person'] =  label
+                                result['Name'] =  split[0].replace('-', ' ').capitalize
+                                result['Surname'] = split[1]
                             except:
                                 sys.exit(1)
         
