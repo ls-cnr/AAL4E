@@ -9,9 +9,9 @@ import pickle
 class DataBaseHandler:
 
     #Define where to store the data. If the database does not exist, it gets created and then a connection is made
-    def __init__(self):
+    def __init__(self, database_path):
         #Where to store our data
-        file = os.getcwd() + '/AFERS/DB/elder.db'
+        file = database_path + 'elder.db'
 
         #If the file does not exist, ...
         if(exists(file) != True):
