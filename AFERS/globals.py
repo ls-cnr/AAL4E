@@ -1,22 +1,24 @@
 import os
+from warnings import catch_warnings
 import cv2
 import sys
 import pandas
 from gtts import gTTS
 from playsound import playsound
-from database_handling import DataBaseHandler
 import speech_recognition
 import numpy
+from database_handling import DataBaseHandler
 
 from deepface import DeepFace
 from deepface.commons import functions
 from deepface.detectors import FaceDetector
+from tensorflow.keras import Model as pred
 
 #Definition of the class for the initialization of the system
 class Globals:
 
     #Initialization of the object
-    def __init__(self, database_path, API):
+    def __init__(self, database_path, API, model = 'VGG-Face'):
 
         #Important properties set to zero at the beginning
         self.backend_model = None
@@ -28,6 +30,7 @@ class Globals:
         self.input_shape_y = 0
         self.face_detector = None
         self.model = None
+        self.model_name = model
         self.database_path = database_path
         self.mediaAPI = API
 
@@ -35,6 +38,7 @@ class Globals:
 
         #Loading the stream
         self.load_webcam_stream()
+        self.build_model(model)
 
 
     #Loading the Database
@@ -115,14 +119,12 @@ class Globals:
         #Try tot load the model, if not possible kill the program after printing the exception
         try:
             if self.emotion_model is None:
-
+                
                 #Call to deepface.DeepFace.build_model function
                 self.emotion_model = DeepFace.build_model('Emotion')
-
                 #If the call fails, kill the program
                 if self.emotion_model is None:
                     sys.exit(1)
-
         except Exception as e:
             print(e)
             sys.exit(1)
@@ -180,25 +182,28 @@ class Globals:
     def preprocessing(self):
         #Try to Preprocess, if something goes wrong, exit after printing the error
         try:
+            
             embeddings = []
             #Preprocess any image contained in the database
             for index in range(0, len(self.elderly)):
                 elder = self.elderly[index]
-
+                
                 embedding = []
-
                 #Actual Preprocessing
-                img = functions.preprocess_face(img = elder, target_size = self.input_shape, enforce_detection = False, detector_backend = 'opencv')
-                img_representation = self.model.predict(img)[0,:]
+                img = functions.preprocess_face(img = elder, target_size =(int(self.streaming.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.streaming.get(cv2.CAP_PROP_FRAME_HEIGHT))), enforce_detection = False, detector_backend = 'opencv')
+                input(3)
+                if self.model is None:
+                    self.build_model(self.model_name)
+                img_representation = self.model.predict(x=img)[0,:]
 
                 embedding.append(elder)
                 embedding.append(img_representation)
                 embeddings.append(embedding)
-            
+                
             #Creating a dataframe for later to be returned
             self.embeddings_df = pandas.DataFrame(embeddings, columns= ['elder', 'embedding'])
             self.embeddings_df['distance_metric'] = 'cosine'
-
+            input(4)
         except Exception as e:
             print(e)
             sys.exit(1)
@@ -230,7 +235,7 @@ class Globals:
     
 
     #Text To Speech Interface
-    def TTSInterface(text, lang='en'):
+    def TTSInterface(self, text='', lang='en'):
         #Reference to the class gTTS()
         tts = gTTS(text, lang=lang)
         
@@ -244,41 +249,45 @@ class Globals:
     def registration(self):
         try:
             #Get the path of the folder for any single person as /<root_folder>/DB/<name>-<surname>/
-            name = self.speech_analysis(tts="State your name, wait a moment before speaking", lang='en')
-            surname = self.speech_analysis(tts="State your surname, wait a moment before speaking", lang='en')
-            
+            #name = self.speech_analysis("State your name, wait a moment before speaking", lang='en')
+            name = 'pierfrancesco'
+            #surname = self.speech_analysis("State your surname, wait a moment before speaking", lang='en')
+            surname = 'martinello'
 
             #Initialize the connection to the database
-            d = DataBaseHandler()
-            folder_name = self.database_path + name.replace(' ', '-').lower() + '-' + name.replace(' ', '-').lower() + '/'
-            
+            dh = DataBaseHandler(database_path=self.database_path)
+            folder_name = self.database_path + name.replace(' ', '-').lower() + '-' + surname.replace(' ', '-').lower() + '/'
+            input(folder_name)
             #If the person's entry does not exists in the database, create it
-            if not d.DBHElderExists(name=name, surname=surname):
-                d.DBHElderlyCommit(name=name, surname=surname, picture=folder_name)
+
+            if dh.DBHElderExists(name=name, surname=surname) == 0:
+                input('committing')
+                dh.DBHElderlyCommit(name=name, surname=surname, picture=folder_name)
 
             name = name.replace(' ', '-').lower()
             surname = surname.replace(' ', '-').lower()
             #If the path does not exists, create it
             if not os.path.isdir(folder_name):
+                input("creating the folder")
                 os.makedirs(folder_name)
 
             self.TTSInterface("Taking a picture. Hold still")
-            ret, frame = self.load_webcam_stream.read()
+            ret, frame = self.streaming.read()
             if ret == True:
                 #Check if the folder is empty. If it is, then write the image
                 if len(os.listdir(folder_name)) == 0:
-                    cv2.imwrite(name.lower() + '_' + surname.lower() + '_1'+ '.jpg', frame)
+                    cv2.imwrite(folder_name + name.lower() + '_' + surname.lower() + '_1'+ '.jpg', frame)
                     
                 else:
                     #If the folder is not empty, ask if you want to add another picture
                     answer = self.speech_analysis(tts="The system recognises you as an user. Do you want to add another image?", lang='en')
+                    answer = 'yes'
                     if answer == "yes":
-                        cv2.imwrite(name.lower() + '_' + surname.lower() + '_' + (len(os.listdir(folder_name))) + '.jpg', frame)
+                        cv2.imwrite(folder_name + name.lower() + '_' + surname.lower() + '_' + (len(os.listdir(folder_name))) + '.jpg', frame)
                     else:
                         self.TTSInterface("Image saving aborted", lang='en')
-                d.DBHClose()
             else:
-                self.TTSInterface("Image saving aborted", lang='en')
+                self.TTSInterface("Image saving aborted 2", lang='en')
         except Exception as e:
             print(e)
 
@@ -389,4 +398,16 @@ class Globals:
             #Stores the current analysed frame in the prev_frame variable 
             prev_frame = threshold_frame
         return 1
-        
+
+
+    
+    def emotion_check(res):
+        emotions = res.get('Emotion')
+        mood = emotions.index.values[0]
+        if mood == "Happy" or mood =="Surprise":
+            return 'Positive'
+        elif mood == 'Neutral':
+            return 'neutral'
+        else:
+            return 'negative'
+    

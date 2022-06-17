@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
+from pprint import pprint
 import sqlite3
-import os
+
 from os.path import exists
 import codecs
 import pickle
@@ -87,8 +88,9 @@ class DataBaseHandler:
             dictionary[tag] = 1
 
         blob = self.DBHEncryptBlob(dictionary=dictionary)
+        pprint(blob)
         #Query to the database
-        self.cursor.execute("INSERT INTO Elders (name, surname, picture_location, df, training_variable) VALUES (?, ?, ?, ?, 0)" , (name, surname, picture, blob))
+        self.cursor.execute("INSERT INTO Elders (name, surname, picture_location, weight, training_variable) VALUES (?, ?, ?, ?, 0)" , (name, surname, picture, blob))
 
 
         #Committing the change through the connection
