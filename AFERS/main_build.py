@@ -40,11 +40,13 @@ while(True):
             if mood == 'positive':
                 #...do something
                 glob.TTSInterface(text="positive")
+                dh.DBHDetectionCommit(name=emotion['Name'], surname=emotion['Surname'], mood= mood, angry=(emotion['Emotions'])['Angry'], disgust=(emotion['Emotions'])['Disgust'], fear=(emotion['Emotions'])['Fear'], happiness=(emotion['Emotions'])['Happiness'], sad=(emotion['Emotions'])['Sad'], surprise=(emotion['Emotions'])['Surprise'], neutral=(emotion['Emotions'])['Neutral'])
                 pass
             #Else, if the emotions are neutral...
             elif mood == 'neutral':
                 #...do something
                 glob.TTSInterface(text="neutral")
+                dh.DBHDetectionCommit(name=emotion['Name'], surname=emotion['Surname'], mood= mood, angry=(emotion['Emotions'])['Angry'], disgust=(emotion['Emotions'])['Disgust'], fear=(emotion['Emotions'])['Fear'], happiness=(emotion['Emotions'])['Happiness'], sad=(emotion['Emotions'])['Sad'], surprise=(emotion['Emotions'])['Surprise'], neutral=(emotion['Emotions'])['Neutral'])
                 pass
             #Else, if the emotions are negative...
             elif mood == 'negative':

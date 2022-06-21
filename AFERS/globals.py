@@ -398,10 +398,8 @@ class Globals:
     
     def emotion_check(self, res):
         emotions = res['Emotions']
-        input(type(emotions))
         mood = emotions['Emotion'].iat[0]
-        input(mood)
-    
+
         if mood == "Happy" or mood =="Surprise":
             return 'Positive'
         elif mood == 'Neutral':

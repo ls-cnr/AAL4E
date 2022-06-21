@@ -104,7 +104,6 @@ class PER:
         meanRes = self.dict_mean(res)
 
         return meanRes
-#To write
 
 
     #Update the weights and the variable
