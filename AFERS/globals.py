@@ -4,14 +4,15 @@ import cv2
 import sys
 import pandas
 from gtts import gTTS
-from playsound import playsound
 import speech_recognition
 import numpy
 from database_handling import DataBaseHandler
+import time
 
 from deepface import DeepFace
 from deepface.commons import functions
 from deepface.detectors import FaceDetector
+from tensorflow.keras import Model as pred
 
 #Definition of the class for the initialization of the system
 class Globals:
@@ -190,11 +191,9 @@ class Globals:
                 embedding = []
                 #Actual Preprocessing
                 img = functions.preprocess_face(img = elder, target_size =(224,224), enforce_detection = False, detector_backend = 'opencv')
-                input(3)
                 if self.model is None:
                     self.build_model(self.model_name)
                 img_representation = self.model.predict(x=img)[0,:]
-
                 embedding.append(elder)
                 embedding.append(img_representation)
                 embeddings.append(embedding)
@@ -202,7 +201,6 @@ class Globals:
             #Creating a dataframe for later to be returned
             self.embeddings_df = pandas.DataFrame(embeddings, columns= ['elder', 'embedding'])
             self.embeddings_df['distance_metric'] = 'cosine'
-            input(4)
         except Exception as e:
             print(e)
             sys.exit(1)
@@ -218,6 +216,7 @@ class Globals:
             #If a text is passed as a parameter, call the TTSInterface in order to say it
             if tts:
                 self.TTSInterface(tts, lang=lang)
+                time.sleep(1)
 
             #Listen to what the user has to see
             audio = self.recognizer_instance.listen(source)
@@ -240,7 +239,7 @@ class Globals:
         
         #Save the audio as temporary MP3 file in order to call the playsound() function, then delete the file
         tts.save("dump.mp3")
-        playsound("dump.mp3")
+        os.system('mpg321 dump.mp3 && exit')
         os.remove("dump.mp3")
     
 
@@ -248,26 +247,24 @@ class Globals:
     def registration(self):
         try:
             #Get the path of the folder for any single person as /<root_folder>/DB/<name>-<surname>/
-            #name = self.speech_analysis("State your name, wait a moment before speaking", lang='en')
-            name = 'pierfrancesco'
-            #surname = self.speech_analysis("State your surname, wait a moment before speaking", lang='en')
-            surname = 'martinello'
+            name = self.speech_analysis("State your name, wait a moment before speaking", lang='en')
+            surname = self.speech_analysis("State your surname, wait a moment before speaking", lang='en')
 
             #Initialize the connection to the database
             dh = DataBaseHandler(database_path=self.database_path)
-            folder_name = self.database_path + name.replace(' ', '-').lower() + '-' + surname.replace(' ', '-').lower() + '/'
+            folder_name = self.database_path + name.replace(' ', '-').lower() + '_' + surname.replace(' ', '-').lower() + '/'
             input(folder_name)
             #If the person's entry does not exists in the database, create it
 
             if dh.DBHElderExists(name=name, surname=surname) == 0:
-                input('committing')
+
+
                 dh.DBHElderlyCommit(name=name, surname=surname, picture=folder_name)
 
             name = name.replace(' ', '-').lower()
             surname = surname.replace(' ', '-').lower()
             #If the path does not exists, create it
             if not os.path.isdir(folder_name):
-                input("creating the folder")
                 os.makedirs(folder_name)
 
             self.TTSInterface("Taking a picture. Hold still")
@@ -280,9 +277,8 @@ class Globals:
                 else:
                     #If the folder is not empty, ask if you want to add another picture
                     answer = self.speech_analysis(tts="The system recognises you as an user. Do you want to add another image?", lang='en')
-                    answer = 'yes'
                     if answer == "yes":
-                        cv2.imwrite(folder_name + name.lower() + '_' + surname.lower() + '_' + (len(os.listdir(folder_name))) + '.jpg', frame)
+                        cv2.imwrite(folder_name + name.lower() + '_' + surname.lower() + '_' + str(len(os.listdir(folder_name))) + '.jpg', frame)
                     else:
                         self.TTSInterface("Image saving aborted", lang='en')
             else:
@@ -400,9 +396,12 @@ class Globals:
 
 
     
-    def emotion_check(res):
-        emotions = res.get('Emotion')
-        mood = emotions.index.values[0]
+    def emotion_check(self, res):
+        emotions = res['Emotions']
+        input(type(emotions))
+        mood = emotions['Emotion'].iat[0]
+        input(mood)
+    
         if mood == "Happy" or mood =="Surprise":
             return 'Positive'
         elif mood == 'Neutral':

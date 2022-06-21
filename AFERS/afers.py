@@ -57,7 +57,6 @@ class AFERS:
     
         #Start preprocessing the images in the database if it is not empty
         if self.global_functions.elderly is not None:
-            input(5)
             self.embeddings = self.global_functions.preprocessing()
         
         
@@ -144,17 +143,14 @@ class AFERS:
                             #Setting the emotion labels
                             emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
-                            input('emotion??')
                             #Make the prediction
                             emotion_predictions= self.global_functions.emotion_model.predict(gray_img)[0,:]
 
-                            input('emotional damage')
                             sum_of_predictions = emotion_predictions.sum()
 
                             #List where to store the information about the emotions
                             moods = []
 
-                            input('emotional damage')
                             for i in range(0, len(emotion_labels)):
                                 mood = []
                                 emotion_label = emotion_labels[i]
@@ -167,12 +163,10 @@ class AFERS:
                                 mood.append(emotion_prediction)
                                 moods.append(mood)
 
-                            input('emotional damage')
                             #Make a dataframe out of the list and sort it by descending score
                             emotion_df = pandas.DataFrame(moods, columns=['Emotion', 'Score'])
                             emotion_df = emotion_df.sort_values(by=['Score'], ascending=False).reset_index(drop=True)
 
-                            input('emotional not damage')
                             #Add ther result of the model to the dictionary
                             result['Emotions'] = emotion_df
 
@@ -228,7 +222,7 @@ class AFERS:
                                     distance = Distance.findEuclideanDistance(Distance.l2_normalize(img1_representation), Distance.l2_normalize(img2_representation))
                                 
                                 return distance
-                            
+                        
                             self.global_functions.embeddings_df['distance'] = self.global_functions.embeddings_df.apply(findDistance, axis= 1)
 
                             #Sort the images of the database for whatever has smaller distance
@@ -248,8 +242,8 @@ class AFERS:
                                 try:
                                     split = label.split('_')
                                     #Add ther result of the model to the dictionary
-                                    result['Name'] =  split[0].replace('-', ' ').capitalize
-                                    result['Surname'] = split[1]
+                                    result['Name'] =  split[0].replace('-', ' ').capitalize()
+                                    result['Surname'] = split[1].replace('-', ' ').capitalize()
                                 except:
                                     sys.exit(1)
             
