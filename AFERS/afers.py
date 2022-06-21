@@ -229,13 +229,13 @@ class AFERS:
                                 
                                 return distance
                             
-                            embeddings['distance'] = embeddings.apply(findDistance, axis= 1)
+                            self.global_functions.embeddings_df['distance'] = self.global_functions.embeddings_df.apply(findDistance, axis= 1)
 
                             #Sort the images of the database for whatever has smaller distance
-                            embeddings = embeddings.sort_values(by= ['distance'])
+                            self.global_functions.embeddings_df = self.global_functions.embeddings_df.sort_values(by= ['distance'])
 
                             #Gets the identity of the person
-                            candidate = embeddings.iloc[0]
+                            candidate = self.global_functions.embeddings_df.iloc[0]
                             elder_name = candidate['elder']
                             best_distance = candidate['distance']
 

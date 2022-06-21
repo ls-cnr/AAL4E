@@ -21,7 +21,7 @@ while(True):
     if glob.motion_recognition() == 1:
 
         #Call the function in order to catch a face
-        person_recognition = AFERS.analysis(used_models=['Emotion'])
+        person_recognition = AFERS.analysis(used_models=[])
         #If a person is not recognised...
         if person_recognition == {}:
             #...start the registration

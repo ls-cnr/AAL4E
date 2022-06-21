@@ -12,7 +12,6 @@ from database_handling import DataBaseHandler
 from deepface import DeepFace
 from deepface.commons import functions
 from deepface.detectors import FaceDetector
-from tensorflow.keras import Model as pred
 
 #Definition of the class for the initialization of the system
 class Globals:
@@ -190,7 +189,7 @@ class Globals:
                 
                 embedding = []
                 #Actual Preprocessing
-                img = functions.preprocess_face(img = elder, target_size =(int(self.streaming.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.streaming.get(cv2.CAP_PROP_FRAME_HEIGHT))), enforce_detection = False, detector_backend = 'opencv')
+                img = functions.preprocess_face(img = elder, target_size =(224,224), enforce_detection = False, detector_backend = 'opencv')
                 input(3)
                 if self.model is None:
                     self.build_model(self.model_name)
