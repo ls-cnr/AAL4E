@@ -20,20 +20,20 @@ dh = None
 #Indefinitely cycling loop
 while(state_variable != -1):
     if(state_variable == 0):
-        preprocessing_time = time.process_time()
+        #Intialization
         glob = Globals(database_path = database_path, API= API, model='VGG-Face')
         afers = AFERS(globals_pointer=glob, used_models = ['Emotion'])
         dh = DataBaseHandler(database_path=database_path)
-        #Program's main core
-        print("Preprocessing done in " + str(time.process_time() - preprocessing_time) + " seconds")
         state_variable = 1
 
     elif(state_variable == 1):
+        #Idle
         if(glob.motion_recognition()):
             time.sleep(1.5)
             state_variable == 2
 
     elif(state_variable == 2):
+        #Person Recognition
         person_recognition = afers.analysis(used_models=[])
         if person_recognition == {}:
             state_variable == 3
@@ -41,12 +41,13 @@ while(state_variable != -1):
             state_variable == 4
 
     elif(state_variable == 3):
+        #Registration
         glob.registration()
         state_variable == 6
 
     elif(state_variable == 4):
+        #Known Person
         glob.TTSInterface(text="Welcome Back." + person_recognition["Name"] + " Hold still in order to catch your emotions", lang='en')
-        #catch their emotions
         emotion = AFERS.analysis(used_models=['Emotion'])
         mood = glob.emotion_check(emotion)
         if mood == 'negative':
@@ -58,15 +59,17 @@ while(state_variable != -1):
             state_variable = 7
 
     elif(state_variable == 5):
+        #PER
         glob.TTSInterface("pronto per il PER", lang="it")
         PER(emotion['Name'], emotion['Surname'], globals_reference=glob , afers=AFERS, dh=dh)
         state_variable = 7
 
     elif(state_variable == 6):
-        input(os.listdir(database_path))
+        #Registration Pre-Idle Operations
         glob.preprocessing()
         state_variable == 7
 
     elif(state_variable == 7):
+        #Pre-Idle
         if(glob.idle_recognition()):
             state_variable == 1
