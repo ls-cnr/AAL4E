@@ -73,7 +73,7 @@ The final choice was DeepFace, and it was the main core of the project.
 
 The code of the program itself and its running file is divived into states, remarking the idea of a [Finite State Automaton](https://en.wikipedia.org/wiki/Finite-state_machine), with a beginning state and links to various modules
 
-![Image](https://github.com/icar-aose/AAL4E/AFERS/Doc/FSA.png "The System")
+![Image](https://github.com/icar-aose/AAL4E/blob/main/AFERS/Doc/FSA.png "The System")
 ### State Index
 - Initialization: <br> Initialization operation such as obtaining a reference to all the devices used (camera, microphone and speakers), loading the models for the analysis of the emotion and preprocessing of the images stored. The next state will be "Idle" 
 - Idle: <br> The system waits until a motion is recognised
