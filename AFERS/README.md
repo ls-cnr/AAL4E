@@ -7,15 +7,15 @@ This project wants to create a system usable on Structures for Elderly Care in o
 ## Index
 
 - [The Idea](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#the-idea)
-- [Background Analysis](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#background_analysis)
-	- [Selection of Libraries](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#selection_of_libraries)
-	- [Final Choice](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#final_choice)
-- [The System](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#the_system)
-	- [Program States](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#program_states)
-	- [State Index](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#state_index)
+- [Background Analysis](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#background-analysis)
+	- [Selection of Libraries](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#selection-of-libraries)
+	- [Final Choice](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#final-choice)
+- [The System](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#the-system)
+	- [Program States](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#program-states)
+	- [State Index](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#state-index)
 - [RoadMap](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#roadmap)
-- [Installation Guide](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#installation_guide)
-- [How to run the program](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#how_to_run_the_program)
+- [Installation Guide](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#installation-guide)
+- [How to run the program](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#how-to-run-the-program)
 
 ---
 
