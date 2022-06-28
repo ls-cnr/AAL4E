@@ -220,6 +220,7 @@ class Globals:
 
             #Listen to what the user has to see
             audio = self.recognizer_instance.listen(source)
+            time.sleep(1.5)
         try:
             #Contact the Google Speech Recogniser to analyse the audio produced
             text = self.recognizer_instance.recognize_google(audio, language="it-IT")
@@ -248,7 +249,9 @@ class Globals:
         try:
             #Get the path of the folder for any single person as /<root_folder>/DB/<name>-<surname>/
             name = self.speech_analysis("State your name, wait a moment before speaking", lang='en')
+            input(name)
             surname = self.speech_analysis("State your surname, wait a moment before speaking", lang='en')
+            input(surname)
 
             #Initialize the connection to the database
             dh = DataBaseHandler(database_path=self.database_path)
@@ -256,10 +259,8 @@ class Globals:
             input(folder_name)
             #If the person's entry does not exists in the database, create it
 
-            if dh.DBHElderExists(name=name, surname=surname) == 0:
-
-
-                dh.DBHElderlyCommit(name=name, surname=surname, picture=folder_name)
+            
+            dh.DBHElderlyCommit(name=name, surname=surname, picture=folder_name)
 
             name = name.replace(' ', '-').lower()
             surname = surname.replace(' ', '-').lower()

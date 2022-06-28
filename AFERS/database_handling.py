@@ -3,6 +3,7 @@ from pprint import pprint
 import sqlite3
 
 from os.path import exists
+import os
 import codecs
 import pickle
 
@@ -19,7 +20,7 @@ class DataBaseHandler:
             try:
                 #...try creating it
                 open(file, 'a').close()
-            
+
                 #Connect to the DB
                 self.connection = sqlite3.connect(file)
 
@@ -29,7 +30,7 @@ class DataBaseHandler:
                 #Initialize the database by creating the tables
                 self.DBHFirstInit()
 
-            #if the creation process encounters a problem, print the following error  
+            #if the creation process encounters a problem, print the following error
             except OSError:
                 print('Failed creating the file')
 
@@ -60,7 +61,8 @@ class DataBaseHandler:
         #Creation of the table Moods
         self.cursor.execute("""
                             CREATE TABLE Moods (
-                                elder INTEGER NOT NULL,
+                                name NOT NULL,
+                                surname NOT NULL,
                                 acquisition_time TEXT NOT NULL,
                                 mood TEXT NOT NULL,
                                 angry REAL NOT NULL,
@@ -70,9 +72,10 @@ class DataBaseHandler:
                                 sad REAL NOT NULL,
                                 surprise REAL NOT NULL,
                                 neutral REAL NOT NULL,
-                                FOREIGN KEY(elder) REFERENCES elders(id),
-                                PRIMARY KEY(elder, acquisition_time)
-                            )
+                                FOREIGN KEY(name) REFERENCES Elders(name),
+                                FOREIGN KEY(surname) REFERENCES Elders(surname),
+                                PRIMARY KEY(name, surname, acquisition_time)
+                            );
                             """)
 
         #Committing the changes through the connection
@@ -83,7 +86,7 @@ class DataBaseHandler:
     def DBHElderlyCommit(self, name, surname, picture):
         dictionary = {}
         tags = ("rain", "art", "sky", "waterfall", "pets", "nature", "landscape", "forest", "beach", "flowers", "countryside")
-        
+
         for tag in tags:
             dictionary[tag] = 1
 
@@ -101,8 +104,7 @@ class DataBaseHandler:
     def DBHDetectionCommit(self, name, surname, mood, angry, disgust, fear, happiness, sad, surprise, neutral, acquisitionTime=None):
 
         #Get the id relative to the person whose emotions must be inserted
-        elder = self.DBHGetProgressiveID(name, surname)
-        
+
         #In case if the acquisition time is not specified...
         if acquisitionTime is None:
             #... Take the actual time and format it
@@ -110,11 +112,11 @@ class DataBaseHandler:
             acquisitionTime.strftime("%m-%d-%Y, 00:00:00")
 
         #Insert query
-        self.cursor.execute("INSERT INTO Moods VALUES ({} , '{}', '{}', {}, {}, {}, {}, {}, {},{})".format(elder, acquisitionTime, mood, angry, disgust, fear, happiness, sad, surprise, neutral))
-
+        self.cursor.execute("INSERT INTO Moods (name, surname, acquisition_time ,mood ,angry ,disgust ,fear ,happiness ,sad ,surprise,neutral) VALUES (?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?)", (name, surname, acquisitionTime, mood, angry, disgust, fear, happiness, sad, surprise, neutral))
+        input('???')
         #Committing the change through the connection
         self.connection.commit()
-
+        input('???')
 
     #Definition of the query to fetch the progressive number relative to a person
     def DBHGetProgressiveID(self, name,surname):
@@ -124,10 +126,10 @@ class DataBaseHandler:
                             SELECT rowid FROM Elders
                             WHERE name = "{}" AND surname = "{}"
                         """.format(name.capitalize(), surname.capitalize()))
-        
+
         #Returning the value of the id
         #The function fetchall returns a list of tuple, so [0][0] is necessary to access the first (unique, in this case) value
-        return self.cursor.fetchall()[0][0]
+        return self.cursor.fetchone()
 
 
     #Definition of the query to fetch the picture location relative to a person
@@ -138,7 +140,7 @@ class DataBaseHandler:
                             SELECT picture_location FROM Elders
                             WHERE name = "{}" AND surname = "{}"
                         """.format(name.capitalize(), surname.capitalize()))
-        
+
         #Returning the location of the picture
         #The function fetchall returns a list of tuple, so [0][0] is necessary to access the first (unique, in this case) value
         return self.cursor.fetchall()[0][0]
@@ -146,11 +148,11 @@ class DataBaseHandler:
 
     #Definition of the query to get the last emotions detection relative to a person
     def DBHGetLastAcquisition(self, name, surname):
-        
+
         #The function simply calls a more general function
         return self.DBHGetLastNAcquisition(name, surname, 1)
 
-    
+
     #Definition of the query to get the last N emotions detections relative to a person
     def DBHGetLastNAcquisition(self, name, surname, n):
 
@@ -162,7 +164,7 @@ class DataBaseHandler:
                                 WHERE elder == {}
                                 ORDER BY acquisition_time DESC
                             """.format(id))
-        
+
         #Returning only the last n acquisitions
         return self.cursor.fetchmany(size=n)
 
@@ -215,41 +217,43 @@ class DataBaseHandler:
 
         #Committing the change through the connection
         self.connection.commit()
-    
+
 
     #Definition of the query to check if a particular entry in the Elder table esists
     def DBHElderExists(self, name, surname):
-        
+
         #Query
         self.cursor.execute("""
                                 SELECT EXISTS(
-                                    SELECT  rowid
+                                    SELECT rowid, *
                                     FROM Elders
-                                    WHERE name = '{}' AND surname = '{}'
+                                    WHERE name == (?) AND surname == (?)
                                 )
-                            """.format(name, surname))
-        
+                            """, (name.lower(), surname.lower()))
+
         #Returning the result of the query as a simple binary value
-        return self.cursor.fetchone()[0]
-    
+        return self.cursor.fetchone()
+
 
     #Returns the dictionary where the weights of preferences relative to a certain person are stored
     def DBHGetBlobAndVariable(self, name, surname):
 
         #Gets the the id relative to the person
         id = self.DBHGetProgressiveID(name, surname)
-
+        name = name.lower()
+        surname = surname.lower()
         #Query
         self.cursor.execute("""
-                            SELECT weight, training_variable
-                            FROM Elder
-                            WHERE rowid = {}
-                            """.format(id))
+                            SELECT *
+                            FROM Elders
+                            WHERE name = :name AND surname = :surname
+                            """, {'name': name, 'surname': surname} )
+
+        pprint(self.cursor.fetchall())
 
         #Decrypting the query result
-        return self.DBHDecryptBlob(self.cursor.fetchall[0][0]), self.cursor.fetchall[0][1]
+        return self.DBHDecryptBlob(self.cursor.fetchone()), self.cursor.fetchone()[1]
 
-    
     #Updates the dictionary where the weights of preferences relative to a certain person are stored
     def DBHUpdateBlobAndVariable(self, name, surname, df, variable):
 
@@ -262,13 +266,13 @@ class DataBaseHandler:
         #Query
         self.cursor.execute("""
                             UPDATE Elder
-                            SET weight = {} AND training_variable = {}
-                            WHERE rowid = {}'
-                            """.format(pickled, variable, id))
+                            SET weight = ? AND training_variable = ?
+                            WHERE rowid == ?
+                            """, (pickled, variable, id))
 
         #Committing the changes through the connection
         self.connection.commit()
-    
+
 
     #Encrypts the Dictionary into a BLOB format
     def DBHEncryptBlob(self, dictionary):
