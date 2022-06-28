@@ -9,7 +9,6 @@ This project wants to create a system usable on Structures for Elderly Care in o
 - [The Idea](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#the-idea)
 - [Background Analysis](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#background-analysis)
 	- [Selection of Libraries](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#selection-of-libraries)
-	- [Final Choice](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#final-choice)
 - [The System](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#the-system)
 	- [Program States](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#program-states)
 	- [State Index](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#state-index)
