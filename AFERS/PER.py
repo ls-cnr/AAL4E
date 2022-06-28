@@ -72,7 +72,7 @@ class PER:
 
     def analysis(self):
 
-        '''sums = sum(self.dict.values())
+        sums = sum(self.dict.values())
         tag = numpy.random.choice(a=self.dict.keys(), size = 1, p=self.dict.values()/sums)
 
         if tag.find('_') == -1:
@@ -81,7 +81,7 @@ class PER:
             retValue = self.show_video(tag.rpartition('_')[0])
         elif tag.find('_a') != -1:
             retValue = self.play_audio(tag.rpartition('_')[0])
-        '''
+        
         self.show_image()
 
         self.save(self.name, self.surname, retValue)
