@@ -1,25 +1,151 @@
 # AFERS - Autonomous Face and Emotion Recognition System
 
-<font size="2.5">This project wants to create a system usable on Structures for Elderly Care in order to track the assisted emotions in a span of time.
+This project wants to create a system usable on Structures for Elderly Care in order to track the assisted emotions in a span of time.
 
-<h1> The idea </h1>
+---
 
-<font size="2.5">The idea is to use the script ot create some system for the recognition and the analysis of the emotions of elderly users, both in a private environment and in Structures for Elderly Care.
+## Index
 
-<h1> P.E.R. - Proactive Emotion Recognition </h1>
+- [The Idea](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#the-idea)
+- [Background Analysis](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#background_analysis)
+	- [Selection of Libraries](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#selection_of_libraries)
+	- [Final Choice](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#final_choice)
+- [System](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#afers)
+	- [Program States](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#program_states)
+	- [State Index](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#state_index)
+- [RoadMap]()
+- [Installation Guide](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#installation_guide)
+- [How to run the program](https://github.com/icar-aose/AAL4E/blob/main/AFERS/README.md#how_to_run_the_program)
 
-<font size="2.5">After a person is recognised, their emotion is detected. If a neutral or a sad emotion is detected, the system will try to modify the elder's emotion using visual (and/or audio in the future) inputs to try to modify their emotions. If an happier emotion is detected, it is stored in a database.
+---
 
-<h2> Input choices</h2>
+## The Idea
 
-<font size="2.5">The idea for the inputs is to choose from a pool of medias at first randomly. When the elder has just finished their registration the media shown to modify their emotions is chosen randomly. After we run a few times our code and understand what the elder like, the choice will not be random.</font>
+The idea is to use the script ot create some system for the recognition and the analysis of the emotions of elderly users, both in a private environment and in Structures for Elderly Care. Hence the final users will be self-sufficient people and the the product might help them to interact with technology in a simple, interactive and transparent wat
 
-<h2> How to choose what kind of media will be shown <h2>
+---
 
-<font size="2.5">The idea is to use the concept used in Machine Learning to calculate the choice of certain element in your model. We use the idea of [Laplacian Smoothing](https://en.wikipedia.org/wiki/Additive_smoothing) in order to associate proto probabilites to choose a certain kind of image. At the beginning of our learning process, it will be uniform. As we learn that a certain kind of media stimulate positive outcome on the user, the probability of choosing that will increment. The set of media shown will not be static.
-<font size="2.5">The idea is to keep it somehow dynamic whilst avoiding to recalculate the probability to pick a certain media every time a new picture is added. A way to fix this is by extracting certain features or characheristic of the medias and put them as tags associated with it. By giving for each elder the probability that a certain tag will change positively their humor, we can choose from a pool of dynamic medias</font>
+## Background Analysis
+
+### The instruments
+
+Instruments for the realization of these project were:
+- A minimalist computer, to be easily hidden to the final users. For these purpose there are a lot of possibilities such as NUC systems, Arduino boards or Raspberry Pis. For our implementation the latter has been used. Technical details of the product are here listed:
+	- Product: Raspberry Pi 4 Model B Rev 1.5
+	- Os: Raspbian GNU/Linux 10 (buster)
+	- Architecture: armv7l
+	- Kernel: 5.10.103-v7l+
+	- CPU: BCM2711 (4 cores, clock speed: 1.50 Ghz)
+	- RAM: 2 GB
+
+- Raspberry Pi camera module (version 2.1)
+
+### Selection of libraries
+
+Some developement time was taken to search for a good State-Of-the-Art library for face analysis and recognition. here are listed the libraries take in consideration:
+- [Deepface]():<br> Deepface it's a library that allows to recognize faces and attrubutes such as age, gender and emotions by using models stored in the library.The library is easily install usding the Python Package Index (PyPI)  and it's distrubuted with MIT License.
+
+- [Face Recognition]():<br> Face Recognition allows faces recognition and their manipulation, such as the application of filters and masks. It allows the implementation using Deep Learning from dlib library. It's distributed with MIT License
+
+- [FaceNet](): <br> FaceNet is an implementation of a particular face recognitor described in literature. It also have bundled with it the weights to train the model and it's distributed with MIT License.
+
+- [InsightFace](): <br> InsightFace  allows face recognition and face alingment efficiently, shared with MIT License.
+
+- [OpenCV](): OpenCV is a library that covers the wide worlf of video and image analysis. Using the thousands of implemented algorithms, it is possible to create a system for face recognition. It is distributed with Apache License 2.0 .
+
+- [OpenFace]():<br> OpenFace is a library that gives a different implementation fo the aforementioned papaer, by not using the TensorFlow library. This is also distributed with Apache License 2.0.
 
 
-<h1>Image, video and audio databases</h1>
+|Library |Face Recognition|Face Recognition|Emotion Recogntion|Licence|
+| :---: | :---: | :---: | :---: | :---: |
+| DeepFace | ✅ | ✅ | ✅ | MIT License |
+| Face Recognition | ✅ | ✅|❌ | MIT License|
+| FaceNet | ✅ |❌ | ❌| MIT License|
+|InsightFace | ✅ | ✅ | ❌| MIT License |
+| OpenCv | ✅ | ✅|❌ | Apache License 2.0|
+| OpenFace | ✅ |❌ | ❌|Apache License 2.0|
 
-<font size="2.5">The images and videos are fetched through API requests from [enter site](enter_site), which provides royalty-free pictures and movies. The license these medias are shared with is [CC-0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+The final choice was DeepFace, and it was the main core of the project.
+
+---
+## The System
+### Program states
+
+The code of the program itself and its running file is divived into states, remarking the idea of a [Finite State Automaton](https://en.wikipedia.org/wiki/Finite-state_machine), with a beginning state and links to various modules
+
+![Image](https://github.com/icar-aose/AAL4E/AFERS/Doc/FSA.png "The System")
+### State Index
+- Initialization: <br> Initialization operation such as obtaining a reference to all the devices used (camera, microphone and speakers), loading the models for the analysis of the emotion and preprocessing of the images stored. The next state will be "Idle" 
+- Idle: <br> The system waits until a motion is recognised
+- Person Recognition: <br> The system analyse the face and check if it has record of the person. In case there is a record, the sistem goesto "Known Person" state, otherwise, goes to "Registration"
+- Known Person: <br> The system analyse the emotion of a person it recognise. If the emotion is positive or neutral, it gets stored in an inner database and then the system will go to the "Pre-Idle" state, otherwise it goes to the state "PER"
+- Registration: <br> The system takes name and surname of the person and stores them alongside a picture in the inner database, then goes to "Registration Pre-Idle Operations"
+- PER: <br>
+- Registration Pre-Idle Operations: <br> In this state, the system repreprocesses all the images stored in the database in order to include the new one as well; then the state shifts to "Pre-Idle"
+- Pre-Idle: <br> Wait until there is no motion, then go to "Idle"
+### RoadMap
+
+In this deadline there were a list of ideas and features that were supposed to work at the end of the 200 hours period of the stage, in which this work was made. Here, the list of the major ideas and their current state <br>
+|Feature| State |Comment|
+| :---: | :---: | :---: |
+
+---
+
+## Installation Guide
+In order to obtain the code you need to run the following script:
+
+```bash
+$git clone https://github.com/icar-aose/AAL4E
+```
+
+Make sure to also have the following requirements:
+
+### Debian-Like systems
+In order to install pip for pyhton3 (in case you just installed your system):
+```bash
+$sudo apt-get install python3-pip -y
+```
+
+Use the following command to install the library necessary to play MPEG from console:
+```bash
+$sudo apt-get install mpg321 -y
+```
+### Fedora
+In order to install pip for pyhton3 (in case you just installed your system):
+```bash
+$yum install epel-release
+$yum install python-pip
+```
+Use the following command to install the library necessary to play MPEG from console:
+```bash
+$yum install mpg321
+```
+### Arch 
+In order to install pip for pyhton3 (in case you just installed your system):
+```bash
+$pacman -S python-pip
+```
+Use the following command to install the library necessary to play MPEG from console:
+```bash
+$yum install mpg321
+```
+### Pip requirements
+
+```bash
+$pip3 install opencv-python pandas gTTS SpeechRecognition deepface
+```
+---
+
+## How to run the program
+
+Once you are sure the requirements have been fulfilled, you can run this code
+
+
+```bash
+$cd AAL4E/
+```
+to enter the folder and then run it with
+
+```bash
+$python3 AFERS/main_build.py
+```
