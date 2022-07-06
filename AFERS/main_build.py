@@ -30,20 +30,20 @@ while(state_variable != -1):
         #Idle
         if(glob.motion_recognition()):
             time.sleep(1.5)
-            state_variable == 2
+            state_variable = 2
 
     elif(state_variable == 2):
         #Person Recognition
         person_recognition = afers.analysis(used_models=[])
         if person_recognition == {}:
-            state_variable == 3
+            state_variable = 3
         else:
-            state_variable == 4
+            state_variable = 4
 
     elif(state_variable == 3):
         #Registration
         glob.registration()
-        state_variable == 6
+        state_variable = 6
 
     elif(state_variable == 4):
         #Known Person
@@ -67,9 +67,9 @@ while(state_variable != -1):
     elif(state_variable == 6):
         #Registration Pre-Idle Operations
         glob.preprocessing()
-        state_variable == 7
+        state_variable = 7
 
     elif(state_variable == 7):
         #Pre-Idle
         if(glob.idle_recognition()):
-            state_variable == 1
+            state_variable = 1
