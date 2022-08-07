@@ -1,9 +1,7 @@
-from pprint import pprint
 import sys
 import numpy
 import pandas
 import re
-import pandas
 
 from deepface import DeepFace
 from deepface.commons import functions, distance as Distance
