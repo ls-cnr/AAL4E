@@ -331,7 +331,7 @@ class Globals:
                 return 1 #If an area with relevant area is found a motion is detected
 
 
-    #This method recognise if there's no change in the scene for a fixed number of frames and exits, otherwise it loops indefinitely
+    #This method recognises if there's no change in the scene for a fixed number of frames and exits, otherwise it loops indefinitely
     def idle_recognition(self):
 
         #Definition of a static background and a variable to store the last analysed frame
@@ -396,7 +396,8 @@ class Globals:
         return 1
 
 
-    
+    #This method checks if the emotion that the model has recognised must be cobnsidered positive, negative or neutral.
+    #Line by line comment will not be added since the syntax of the code is trivial
     def emotion_check(self, res):
         emotions = res['Emotions']
         mood = emotions['Emotion'].iat[0]
