@@ -12,7 +12,7 @@ import time
 from deepface import DeepFace
 from deepface.commons import functions
 from deepface.detectors import FaceDetector
-from tensorflow.keras import Model as pred
+from tensorflow.python.keras import Model as pred
 
 #Definition of the class for the initialization of the system
 class Globals:
