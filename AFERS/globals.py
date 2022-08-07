@@ -8,6 +8,8 @@ import speech_recognition
 import numpy
 from database_handling import DataBaseHandler
 import time
+from tkinter import Label, Tk
+from PIL import Image, ImageTk
 
 from deepface import DeepFace
 from deepface.commons import functions
@@ -409,3 +411,39 @@ class Globals:
         else:
             return 'negative'
     
+    #Makes a window and shows an image for a specified number of seconds
+    def show_image(duration = 0, img_path = ""):
+        #Creates a window
+        window = Tk()
+
+        #Setting the dimension of the window and in which display it must be shown
+        window.overrideredirect(True)
+        window.wm_attributes("-fullscreen", True)
+        display1 = Label(window)
+        display1.grid(row=1, column=0, padx=0, pady=0)  #Display 1
+
+        #Turning the duration from second to millisecond
+        duration_in_millisec = duration * 1000
+
+        #Inner function to show the image (necessary to avoid some errors being thrown)
+        def show_pic():
+            
+            #Opening the image found on the path specified by img_path
+            img = Image.open(img_path)
+
+            #makes the image an object usable by Tkinter
+            imgtk = ImageTk.PhotoImage(master = display1, image=img)
+            display1.imgtk = imgtk
+            display1.configure(image=imgtk)
+            
+            #After 10 milliseconds, shows the picture
+            window.after(10, show_pic)
+
+            #After the time spefied in the parameter is passed, the window is destroyed 
+            window.after(duration_in_millisec, lambda:window.destroy())
+
+            #Forces to keep the window opened until the timer ticks down
+            window.mainloop()
+
+        #Call to the inner function
+        show_pic()
