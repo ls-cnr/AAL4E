@@ -111,28 +111,40 @@ In order to install pip for pyhton3 (in case you just installed your system):
 $sudo apt-get install python3-pip -y
 ```
 
-Use the following command to install the library necessary to play MPEG from console:
+Use the following command to install the library necessary to run the code properly:
 ```bash
+#For playing MPEG from console
 $sudo apt-get install mpg321 -y
+
+#For image manipulation
+$sudo apt-get install python3-pil python3-pil.imagetk
 ```
 ### Fedora
 In order to install pip for pyhton3 (in case you just installed your system):
 ```bash
-$yum install epel-release
-$yum install python-pip
+$sudo yum install epel-release
+$sudo yum install python-pip
 ```
-Use the following command to install the library necessary to play MPEG from console:
+Use the following command to install the library necessary to run the code properly:
 ```bash
-$yum install mpg321
+#For playing MPEG from console
+$sudo yum install mpg321
+
+#For image manipulation
+$sudo yum install python3-pillow python3-pillow-tk
 ```
 ### Arch 
 In order to install pip for pyhton3 (in case you just installed your system):
 ```bash
-$pacman -S python-pip
+$sudo pacman -S python-pip
 ```
-Use the following command to install the library necessary to play MPEG from console:
+Use the following command to install the library necessary to run the code properly:
 ```bash
-$yum install mpg321
+#For playing MPEG from console
+$sudo pacman install mpg321
+
+#For image manipulation
+$sudo pacman -S python-pillow
 ```
 ### Pip requirements
 
