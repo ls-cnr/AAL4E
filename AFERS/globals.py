@@ -251,23 +251,22 @@ class Globals:
         try:
             #Get the path of the folder for any single person as /<root_folder>/DB/<name>-<surname>/
             #name = self.speech_analysis("State your name, wait a moment before speaking", lang='en')
-            name =""
-            surname=""
 
-            print('Write your name (without surname')
-            input(name)
+            name = input('Write your name (without surname): ')
             #surname = self.speech_analysis("State your surname, wait a moment before speaking", lang='en')
-            print('Write your surname')
-            input(surname)
+            surname = input('Write your surname': )
 
+            completename = name.replace(' ', '-').lower() + '_' + surname.replace(' ', '-').lower()
+            print("your id is: "+completename)
             #Initialize the connection to the database
             dh = DataBaseHandler(database_path=self.database_path)
-            folder_name = self.database_path + name.replace(' ', '-').lower() + '_' + surname.replace(' ', '-').lower() + '/'
-            input(folder_name)
+            folder_name = self.database_path + completename + '/'
+            #input(folder_name)
             #If the person's entry does not exists in the database, create it
 
             
             dh.DBHElderlyCommit(name=name, surname=surname, picture=folder_name)
+            print("registered in: "+folder_name)
 
             name = name.replace(' ', '-').lower()
             surname = surname.replace(' ', '-').lower()
@@ -275,12 +274,15 @@ class Globals:
             if not os.path.isdir(folder_name):
                 os.makedirs(folder_name)
 
-            self.TTSInterface("Taking a picture. Hold still")
+            print(name + ", taking a picture, please hold still!")
+            #self.TTSInterface("Taking a picture. Hold still")
+            time.sleep(2)
+
             ret, frame = self.streaming.read()
             if ret == True:
                 #Check if the folder is empty. If it is, then write the image
                 if len(os.listdir(folder_name)) == 0:
-                    cv2.imwrite(folder_name + name.lower() + '_' + surname.lower() + '_1'+ '.jpg', frame)
+                    cv2.imwrite(folder_name + completename + '_1.jpg', frame)
                     
                 else:
                     #If the folder is not empty, ask if you want to add another picture
