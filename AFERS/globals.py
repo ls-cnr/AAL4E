@@ -286,13 +286,16 @@ class Globals:
                     
                 else:
                     #If the folder is not empty, ask if you want to add another picture
-                    answer = self.speech_analysis(tts="The system recognises you as an user. Do you want to add another image?", lang='en')
-                    if answer == "yes":
-                        cv2.imwrite(folder_name + name.lower() + '_' + surname.lower() + '_' + str(len(os.listdir(folder_name))) + '.jpg', frame)
+                    #answer = self.speech_analysis(tts="The system recognises you as an user. Do you want to add another image?", lang='en')
+                    answer = input("The system recognises you as an user. Do you want to add another image? (Y | n)")
+                    if answer == "yes" | answer=="Y" | answer=="y" | answer=="":
+                        cv2.imwrite(folder_name + completename + '_' + str(len(os.listdir(folder_name))) + '.jpg', frame)
                     else:
-                        self.TTSInterface("Image saving aborted", lang='en')
+                        print("Ok! operation aborted")
+                        #self.TTSInterface("Image saving aborted", lang='en')
             else:
-                self.TTSInterface("Image saving aborted 2", lang='en')
+                print("I could not get the picture")
+                #self.TTSInterface("Image saving aborted 2", lang='en')
         except Exception as e:
             print(e)
 
