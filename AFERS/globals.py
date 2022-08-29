@@ -250,9 +250,14 @@ class Globals:
     def registration(self):
         try:
             #Get the path of the folder for any single person as /<root_folder>/DB/<name>-<surname>/
-            name = self.speech_analysis("State your name, wait a moment before speaking", lang='en')
+            #name = self.speech_analysis("State your name, wait a moment before speaking", lang='en')
+            name =""
+            surname=""
+
+            print('Write your name (without surname')
             input(name)
-            surname = self.speech_analysis("State your surname, wait a moment before speaking", lang='en')
+            #surname = self.speech_analysis("State your surname, wait a moment before speaking", lang='en')
+            print('Write your surname')
             input(surname)
 
             #Initialize the connection to the database
