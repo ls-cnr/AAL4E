@@ -254,7 +254,7 @@ class Globals:
 
             name = input('Write your name (without surname): ')
             #surname = self.speech_analysis("State your surname, wait a moment before speaking", lang='en')
-            surname = input('Write your surname': )
+            surname = input('Write your surname: ' )
 
             completename = name.replace(' ', '-').lower() + '_' + surname.replace(' ', '-').lower()
             print("your id is: "+completename)
