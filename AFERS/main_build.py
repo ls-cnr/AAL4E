@@ -21,19 +21,24 @@ dh = None
 while(state_variable != -1):
     if(state_variable == 0):
         #Intialization
+        print('Init globals')
         glob = Globals(database_path = database_path, API= API, model='VGG-Face')
+        print('Init afers')
         afers = AFERS(globals_pointer=glob, used_models = ['Emotion'])
+        print('Init db')
         dh = DataBaseHandler(database_path=database_path)
         state_variable = 1
 
     elif(state_variable == 1):
         #Idle
+        print('State: Idle')
         if(glob.motion_recognition()):
             time.sleep(1.5)
             state_variable = 2
 
     elif(state_variable == 2):
         #Person Recognition
+        print('State: face entered the cam')
         person_recognition = afers.analysis(used_models=[])
         if person_recognition == {}:
             state_variable = 3
@@ -42,11 +47,13 @@ while(state_variable != -1):
 
     elif(state_variable == 3):
         #Registration
+        print('State: new user/user not recognized')
         glob.registration()
         state_variable = 6
 
     elif(state_variable == 4):
         #Known Person
+        print('State: user recognized')
         glob.TTSInterface(text="Welcome Back." + person_recognition["Name"] + " Hold still in order to catch your emotions", lang='en')
         emotion = AFERS.analysis(used_models=['Emotion'])
         mood = glob.emotion_check(emotion)
@@ -60,16 +67,19 @@ while(state_variable != -1):
 
     elif(state_variable == 5):
         #PER
+        print('State: neutral emotion stimulation')
         glob.TTSInterface("pronto per il PER", lang="it")
         PER(emotion['Name'], emotion['Surname'], globals_reference=glob , afers=AFERS, dh=dh)
         state_variable = 7
 
     elif(state_variable == 6):
         #Registration Pre-Idle Operations
+        print('State: registration pre-idle')
         glob.preprocessing()
         state_variable = 7
 
     elif(state_variable == 7):
         #Pre-Idle
+        print('State: pre-idle')
         if(glob.idle_recognition()):
             state_variable = 1
