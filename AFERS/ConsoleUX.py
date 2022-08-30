@@ -14,7 +14,7 @@ class ConsoleUX(AbstractUX, ABC):
     def emotion_gradient(self, current_user, gradient):
         if gradient<0:
             print("Today I find you worst than usual")
-        elif gradient=0:
+        elif gradient==0:
             print("Today I find you as usual")
         else:
             print("Today I find you better than usual")
