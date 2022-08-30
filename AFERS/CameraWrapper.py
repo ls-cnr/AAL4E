@@ -48,7 +48,7 @@ class CameraWrapper:
         # For each countour
         for contour in contours:
             th = cv2.contourArea(contour)
-            print("detected th: "+th)
+            print("detected th: "+str(th))
             # The area is checked and if it is not so relevant (the area is less than 10000), the next area is checked
             if cv2.contourArea(contour) > 10000:  # If an area with relevant area is found a motion is detected
                 relevant = True
