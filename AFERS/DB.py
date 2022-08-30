@@ -55,7 +55,7 @@ class DB:
         self.cursor.execute("""
                             CREATE TABLE Emotion (
                                 id INTEGER PRIMARY KEY,
-                                FOREIGN KEY(user) REFERENCES User(id),
+                                user INTEGER,
                                 acquisition_time TEXT NOT NULL,
                                 mood TEXT NOT NULL,
                                 angry REAL NOT NULL,
@@ -64,7 +64,8 @@ class DB:
                                 happiness REAL NOT NULL,
                                 sad REAL NOT NULL,
                                 surprise REAL NOT NULL,
-                                neutral REAL NOT NULL
+                                neutral REAL NOT NULL,
+                                FOREIGN KEY(user) REFERENCES User(id)
                             );
                             """)
 
