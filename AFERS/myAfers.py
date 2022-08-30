@@ -2,9 +2,9 @@ import os
 import time
 
 import myProcedures as Proc
-import DB
-import CameraWrapper
-import ConsoleUX
+from DB import DB
+from CameraWrapper import CameraWrapper
+from ConsoleUX import ConsoleUX
 
 # initialize
 app_path = os.getcwd() + '/AFERS/'
