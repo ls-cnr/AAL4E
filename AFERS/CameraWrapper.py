@@ -17,6 +17,7 @@ class CameraWrapper:
         self.static_back = self.capture_grey_blurred_image()
 
     def release(self):
+        print("releasing")
         self.streaming.release()
         cv2.destroyAllWindows()
 
