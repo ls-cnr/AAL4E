@@ -1,6 +1,6 @@
 from abc import ABC
 
-from AFERS.AbstractUX import AbstractUX
+import AbstractUX
 
 
 class ConsoleUX(AbstractUX, ABC):
