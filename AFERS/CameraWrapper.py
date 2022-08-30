@@ -7,9 +7,13 @@ from deepface.basemodels import VGGFace
 class CameraWrapper:
 
     def __init__(self,display_frame=True):
+        print("init")
         self.display_the_frame = display_frame
+        print("loading the model")
         self.face_recognition_model = VGGFace.loadModel()
+        print("opening the stream")
         self.streaming = cv2.VideoCapture(0)
+        print("capturing the background")
         self.static_back = self.capture_grey_blurred_image()
 
     def capture_grey_blurred_image(self):
