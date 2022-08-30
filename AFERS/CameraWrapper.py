@@ -16,6 +16,10 @@ class CameraWrapper:
         print("capturing the background")
         self.static_back = self.capture_grey_blurred_image()
 
+    def release(self):
+        self.streaming.release()
+        cv2.destroyAllWindows()
+
     def capture_grey_blurred_image(self):
         # Gets the frame of the video source
         flag, image = self.streaming.read()
@@ -50,9 +54,11 @@ class CameraWrapper:
             th = cv2.contourArea(contour)
             print("detected th: "+str(th))
             # The area is checked and if it is not so relevant (the area is less than 10000), the next area is checked
-            if cv2.contourArea(contour) > 10000:  # If an area with relevant area is found a motion is detected
+            if th > 1000:  # If an area with relevant area is found a motion is detected
+                print("is relevant!")
                 relevant = True
 
+        print("exiting with "+str(relevant))
         return relevant
 
     def check_face(self, known_faces):
