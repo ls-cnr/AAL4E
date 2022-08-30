@@ -1,7 +1,7 @@
 import AbstractUX
 
 
-class ConsoleUX(AbstractUX):
+class ConsoleUX():
 
     def set_state(self, state_string):
         print("State: "+state_string)
