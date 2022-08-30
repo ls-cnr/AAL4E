@@ -31,6 +31,7 @@ class CameraWrapper:
         return blurred_gray
 
     def detect_movement(self):
+        print("capturing the image")
         blurred_gray = self.capture_grey_blurred_image()
 
         # Gets the absolute difference between the static background and the current analysed frame
@@ -43,13 +44,16 @@ class CameraWrapper:
         # Finds the countours of the foreground
         contours, _ = cv2.findContours(threshold_frame.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+        relevant = False
         # For each countour
         for contour in contours:
+            th = cv2.contourArea(contour)
+            print("detected th: "+th)
             # The area is checked and if it is not so relevant (the area is less than 10000), the next area is checked
             if cv2.contourArea(contour) > 10000:  # If an area with relevant area is found a motion is detected
-                return True
+                relevant = True
 
-        return False
+        return relevant
 
     def check_face(self, known_faces):
         pass
