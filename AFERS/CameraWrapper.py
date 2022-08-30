@@ -1,5 +1,9 @@
 import cv2
 import numpy
+
+import signal
+import sys
+
 from deepface import DeepFace
 from deepface.basemodels import VGGFace
 
@@ -15,9 +19,15 @@ class CameraWrapper:
         self.streaming = cv2.VideoCapture(0)
         print("capturing the background")
         self.static_back = self.capture_grey_blurred_image()
+        signal.signal(signal.SIGINT, self.exit_handler)
+
+    def exit_handler(self, sig, frame):
+        print('You pressed Ctrl+C!')
+        self.release()
+        sys.exit(0)
 
     def release(self):
-        print("releasing")
+        print("releasing the cam")
         self.streaming.release()
         cv2.destroyAllWindows()
 
