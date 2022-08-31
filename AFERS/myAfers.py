@@ -7,12 +7,12 @@ from CameraWrapper import CameraWrapper
 from ConsoleUX import ConsoleUX
 
 # initialize
-app_path = os.getcwd() + '/AFERS/'
+app_path = os.getcwd() + '/AFERS'
 
-state = 1
+state = 2
 
-db = DB(app_path+'DB/')
-cam = CameraWrapper()
+db = DB(app_path+'/DB/')
+cam = CameraWrapper(app_path+'/models/')
 ux = ConsoleUX()
 current_user = None
 
@@ -21,23 +21,34 @@ while state != -1:
     try:
         if state == 1:
             ux.set_state("idle")
-            something_appeared = cam.detect_movement()
+            something_appeared = cam.detect_face() #cam.detect_movement()
             if something_appeared:
-                ux.set_state("object has entered but no transition so far")
-                state = 1       #was 2
+                state = 2
+
+        # elif state == 10:
+        #     image_path = app_path+'/DB/profiles/images/brad_pitt.jpeg'
+        #     print(image_path)
+        #     image_repr = cam.calculate_representation(image_path)
+        #     db.register_user("brad","pitt",image_repr)
+        #     state = -1
+
 
         elif state == 2:
-            ux.set_state("object has entered")
+            state = -1  #TO REMOVE
+            ux.set_state("face has entered")
             known_faces = db.get_known_faces()
-            identities = cam.check_face(known_faces)
-            if identities == []:
-                state = 1
-            elif len(identities) == 1:
-                user_id = identities[0]
-                current_user = db.get_user(user_id)
-                state = 4
-            else:
-                time.sleep(2.0)
+            #print(known_faces)
+
+            identity = cam.recognize_face_optimized(known_faces)
+            print("user_id: "+str(identity))
+            # if len(identities) == 0:
+            #     state = 1
+            # elif len(identities) == 1:
+            #     user_id = identities[0]
+            #     current_user = db.get_user(user_id)
+            #     state = 4
+            # else:
+            #     time.sleep(2.0)
 
         elif state == 3:
             ux.set_state("face not recognized")
@@ -75,3 +86,4 @@ while state != -1:
     time.sleep(0.5)
 
 # terminate
+cam.release()
