@@ -11,12 +11,14 @@ from ConsoleUX import ConsoleUX
 # config
 enable_registration = False
 show_cam_captures = True
+debug_verbosity = False
 
 # initialize
 app_path = os.getcwd() + '/AFERS'
-db = DB(app_path + '/DB/')
-cam = CameraWrapper(app_path + '/models/',show_cam_captures)
-ux = ConsoleUX()
+
+ux = ConsoleUX(debug_verbosity)
+db = DB(app_path + '/DB/',ux)
+cam = CameraWrapper(app_path + '/models/',show_cam_captures,ux)
 
 current_user = UserProfile(-1, "null", "null", [])
 state = 1
@@ -26,16 +28,15 @@ while state != -1:
     try:
         if state == 1:
             ux.set_state("idle")
-            # something_appeared = cam.detect_movement()
-            something_appeared = cam.detect_face()
-            if something_appeared:
+            someone_appeared = cam.face_detection()
+            if someone_appeared:
                 state = 2
 
         elif state == 2:
             state = -1  # TO REMOVE
             ux.set_state("face has entered")
             known_faces = db.get_known_faces()
-            identity = cam.recognize_face_optimized(known_faces)
+            identity = cam.face_recognition(known_faces)
 
             if identity is None:
                 state = 3
@@ -71,7 +72,7 @@ while state != -1:
 
         elif state == 6:
             ux.set_state("pre idle")
-            idle = cam.detect_face() == 0 #Proc.check_idle()
+            idle = cam.face_detection() == 0 #Proc.check_idle()
             if idle:
                 state = 1
 

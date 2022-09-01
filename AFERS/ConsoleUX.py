@@ -3,8 +3,13 @@ import AbstractUX
 
 class ConsoleUX():
 
-    def __init__(self):
+    def __init__(self, debug_verbosity):
+        self.debug_verbosity = debug_verbosity
         self.state = "unknown"
+
+    def message(self,msg):
+        if self.debug_verbosity:
+            print(msg)
 
     def set_state(self, state_string):
         if self.state != state_string:

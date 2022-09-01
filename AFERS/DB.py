@@ -7,7 +7,9 @@ from User import UserProfile
 class DB:
 
     # Define where to store the data. If the database does not exist, it gets created and then a connection is made
-    def __init__(self, database_path):
+    def __init__(self, database_path, ux):
+        self.ux = ux
+
         # Where to store our data
         self.path = database_path
         file = database_path + 'user_profiles.db'
@@ -29,7 +31,7 @@ class DB:
 
             # if the creation process encounters a problem, print the following error
             except OSError:
-                print('Failed creating the file: ' + file)
+                ux.message('Failed creating the file: ' + file)
 
         # If the file esists, just establish a connection with it
         else:
@@ -88,7 +90,7 @@ class DB:
                 row = self.cursor.fetchone()
 
         except Exception as e:
-            print("db error: " + e)
+            self.ux.message("db error: " + e)
 
         return dict
 
@@ -108,7 +110,7 @@ class DB:
                 return user
 
         except Exception as e:
-            print("db error: "+e)
+            self.ux.message("db error: "+e)
             return None
 
 
