@@ -1,5 +1,4 @@
 import cv2
-import numpy
 
 import signal
 import sys
@@ -25,8 +24,10 @@ class CameraWrapper:
             self.face_cascade = cv2.CascadeClassifier(model_path + 'haarcascade_frontalface_default.xml')
             ux.message("opening the stream")
             self.streaming = cv2.VideoCapture(0)
-            ux.message("capturing the background")
-            self.static_back = self.capture_grey_blurred_image()
+            # ux.message("capturing the background")
+            # self.static_back = self.capture_grey_blurred_image()
+            self.static_back = None
+
         except Exception as e:
             ux.message("camera error: "+e)
 
@@ -98,24 +99,28 @@ class CameraWrapper:
 def detect_movement(self):
     # print("capturing the image")
     blurred_gray = self.capture_grey_blurred_image()
+    if self.static_back is None:
+        self.static_back = blurred_gray
+        return False
 
-    # Gets the absolute difference between the static background and the current analysed frame
-    frame_difference = cv2.absdiff(self.static_back, blurred_gray)
+    else:
+        # Gets the absolute difference between the static background and the current analysed frame
+        frame_difference = cv2.absdiff(self.static_back, blurred_gray)
+        self.static_back = blurred_gray
 
-    # Thresholds the frame in order to recognise foreground and background, then appies morphological operations
-    # in order to show the foreground as bigger
-    threshold_frame = cv2.threshold(frame_difference, 30, 255, cv2.THRESH_BINARY)[1]
-    # threshold_frame = cv2.dilate(cv2.threshold(frame_difference, 30, 255, cv2.THRESH_BINARY)[1], None, iterations=2)
+        # Thresholds the frame in order to recognise foreground and background, then appies morphological operations
+        # in order to show the foreground as bigger
+        threshold_frame = cv2.threshold(frame_difference, 30, 255, cv2.THRESH_BINARY)[1]
+        # threshold_frame = cv2.dilate(cv2.threshold(frame_difference, 30, 255, cv2.THRESH_BINARY)[1], None, iterations=2)
 
-    # Finds the countours of the foreground
-    contours, _ = cv2.findContours(threshold_frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    print("Number of Contours found = " + str(len(contours)))
+        # Finds the countours of the foreground
+        contours, _ = cv2.findContours(threshold_frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    relevant = False
-    # For each countour
-    for contour in contours:
-        th = cv2.contourArea(contour)
-        if th > 1000:  # If an area with relevant area is found a motion is detected
-            relevant = True
+        relevant = False
+        # For each countour
+        for contour in contours:
+            th = cv2.contourArea(contour)
+            if th > 1000:  # If an area with relevant area is found a motion is detected
+                relevant = True
 
-    return relevant
+        return relevant

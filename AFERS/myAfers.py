@@ -33,7 +33,6 @@ while state != -1:
                 state = 2
 
         elif state == 2:
-            state = -1  # TO REMOVE
             ux.set_state("face has entered")
             known_faces = db.get_known_faces()
             identity = cam.face_recognition(known_faces)
