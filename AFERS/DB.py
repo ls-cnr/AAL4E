@@ -1,13 +1,15 @@
 import sqlite3
 from os.path import exists
 
+from User import UserProfile
+
 
 class DB:
 
     # Define where to store the data. If the database does not exist, it gets created and then a connection is made
     def __init__(self, database_path):
-        self.path = database_path
         # Where to store our data
+        self.path = database_path
         file = database_path + 'user_profiles.db'
 
         # If the file does not exist, ...
@@ -74,24 +76,41 @@ class DB:
     def get_known_faces(self):
         dict = {}
         self.cursor.execute("""
-                            SELECT id, name,surname,image_representation FROM User
+                            SELECT id, image_representation 
+                            FROM User
                             """)
         try:
             row = self.cursor.fetchone()
             while row:
                 id = str(row[0])
-                #name = str(row[1])
-                #surname = str(row[2])
-                image_rep = self.decode_representation(str(row[3]))
-                dict[id]=image_rep
+                image_rep = self.decode_representation(str(row[1]))
+                dict[id] = image_rep
                 row = self.cursor.fetchone()
-        except:
-            print("db error")
+
+        except Exception as e:
+            print("db error: " + e)
 
         return dict
 
     def get_user(self, user_id):
-        pass
+        try:
+            self.cursor.execute("""
+                                SELECT id, name, surname, image_representation 
+                                FROM User 
+                                WHERE id == ?
+                                """, str(user_id))
+            row = self.cursor.fetchone()
+            if row:
+                name = str(row[1])
+                surname = str(row[2])
+                image_rep = self.decode_representation(str(row[3]))
+                user = UserProfile(user_id, name, surname, image_rep)
+                return user
+
+        except Exception as e:
+            print("db error: "+e)
+            return None
+
 
     def commit_emotion(self, current_user, emotion):
         pass
@@ -103,14 +122,13 @@ class DB:
                             (name, surname, image_representation_str))
         self.connection.commit()
 
-
-    def encode_representation(self,list_of_float):
+    def encode_representation(self, list_of_float):
         image_representation_str = ""
         for x in list_of_float:
             image_representation_str = image_representation_str + str(x) + " "
         return image_representation_str
 
-    def decode_representation(self,encoded_list_of_float):
+    def decode_representation(self, encoded_list_of_float):
         floats_list = []
         for item in encoded_list_of_float.split():
             floats_list.append(float(item))

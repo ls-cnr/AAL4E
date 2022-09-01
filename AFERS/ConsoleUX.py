@@ -3,8 +3,13 @@ import AbstractUX
 
 class ConsoleUX():
 
+    def __init__(self):
+        self.state = "unknown"
+
     def set_state(self, state_string):
-        print("State: "+state_string)
+        if self.state != state_string:
+            print("State: "+state_string)
+            self.state = state_string
 
     def welcomeback_user(self, current_user):
         print("Welcome back: " + current_user.name)
