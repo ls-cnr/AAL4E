@@ -52,6 +52,7 @@ while state != -1:
         elif state == 4:
             ux.set_state("face recognized")
             ux.welcomeback_user(current_user)
+            cam.emotion_analysis()
             state = 6
             # if current_user.need_recognition:
             #     state = 5
@@ -74,6 +75,8 @@ while state != -1:
             idle = cam.face_detection() == 0 #Proc.check_idle()
             if idle:
                 state = 1
+            else:
+                state = 2
 
         # TO REMOVE code used to manually add entries into the database
         # elif state == 10:

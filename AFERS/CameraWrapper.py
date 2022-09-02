@@ -5,13 +5,16 @@ import sys
 
 from deepface import DeepFace
 from deepface.basemodels import VGGFace
+from deepface.extendedmodels import Emotion
 from deepface.commons import distance as dst
+from deepface.commons import functions
+
 import numpy as np
 
 
 class CameraWrapper:
 
-    def __init__(self, model_path, display_frame,ux):
+    def __init__(self, model_path, display_frame, ux):
         self.ux = ux
         self.path = model_path
         ux.message("init")
@@ -19,8 +22,10 @@ class CameraWrapper:
         self.static_back = None
 
         try:
-            ux.message("loading the model")
+            ux.message("loading the face detection model")
             self.face_recognition_model = VGGFace.loadModel()
+            ux.message("loading the emotion analysis model")
+            self.emotion_model = Emotion.loadModel()
             ux.message("loading classifier")
             self.face_cascade = cv2.CascadeClassifier(model_path + 'haarcascade_frontalface_default.xml')
             ux.message("opening the stream")
@@ -28,7 +33,7 @@ class CameraWrapper:
 
 
         except Exception as e:
-            ux.message("camera error: "+e)
+            ux.message("camera error: " + e)
 
         signal.signal(signal.SIGINT, self.exit_handler)
 
@@ -42,39 +47,37 @@ class CameraWrapper:
         self.streaming.release()
         cv2.destroyAllWindows()
 
-    def capture_grey_blurred_image(self):
+    def capture_image(self, greyscale=False, blurred=False):
         # Gets the frame of the video source
         flag, image = self.streaming.read()
 
-        # Switching the color space to Grayscale to ease of use
-        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # Using a Gaussian Blur to even more improve ease of use
-        blurred_gray = cv2.GaussianBlur(gray_image, (21, 21), 0)
-
         if self.display_the_frame:
-            cv2.imshow('Frame', blurred_gray)
-            cv2.waitKey(1)
+             cv2.imshow('Frame', image)
+             cv2.waitKey(1)
 
-        return blurred_gray
+        # Switching the color space to Grayscale to ease of use
+        if greyscale:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
+        # Using a Gaussian Blur to even more improve ease of use
+        if blurred:
+            image = cv2.GaussianBlur(image, (21, 21), 0)
 
-    def calculate_representation(self, path):
-        image_repr = DeepFace.represent(path, model=self.face_recognition_model)
+        return image
+
+    def calculate_representation(self, image_or_imagefile):
+        image_repr = DeepFace.represent(image_or_imagefile, model=self.face_recognition_model)
         return image_repr
 
     def face_detection(self):
-        blurred_gray = self.capture_grey_blurred_image()
+        blurred_gray = self.capture_image(greyscale=True,blurred=True)
         faces = self.face_cascade.detectMultiScale(blurred_gray, 1.1, 4)
         return len(faces) > 0
 
     def face_recognition(self, known_faces):
         try:
-            ret, image = self.streaming.read()
-            cam_repr = DeepFace.represent(image, model=self.face_recognition_model)
-
-            if self.display_the_frame:
-                cv2.imshow('Last Capture', image)
-                cv2.waitKey(1)
+            image = self.capture_image()
+            cam_repr = self.calculate_representation(image)
 
             threshold = 0.4
             selected = None
@@ -93,6 +96,29 @@ class CameraWrapper:
             print(e)
 
         return None
+
+    def emotion_analysis(self):
+        try:
+            image = self.capture_image()
+
+            emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
+            img, region = functions.preprocess_face(img=image, target_size=(48, 48), grayscale=True,
+                                                    enforce_detection=True,
+                                                    detector_backend="opencv", return_region=True)
+            emotion_predictions = self.emotion_model.predict(img)[0, :]
+
+            resp_obj = {}
+            sum_of_predictions = emotion_predictions.sum()
+            for i in range(0, len(emotion_labels)):
+                emotion_label = emotion_labels[i]
+                emotion_prediction = round( 100 * emotion_predictions[i] / sum_of_predictions ,3 )
+                resp_obj[emotion_label] = emotion_prediction
+
+            resp_obj["dominant_emotion"] = emotion_labels[np.argmax(emotion_predictions)]
+            print(resp_obj)
+
+        except Exception as e:
+            print(e)
 
 
 def detect_movement(self):
