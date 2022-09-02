@@ -11,7 +11,7 @@ from ConsoleUX import ConsoleUX
 # config
 enable_registration = False
 show_cam_captures = True
-debug_verbosity = False
+debug_verbosity = True
 
 # initialize
 app_path = os.getcwd() + '/AFERS'

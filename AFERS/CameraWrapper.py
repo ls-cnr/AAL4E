@@ -16,6 +16,7 @@ class CameraWrapper:
         self.path = model_path
         ux.message("init")
         self.display_the_frame = display_frame
+        self.static_back = None
 
         try:
             ux.message("loading the model")
@@ -24,9 +25,7 @@ class CameraWrapper:
             self.face_cascade = cv2.CascadeClassifier(model_path + 'haarcascade_frontalface_default.xml')
             ux.message("opening the stream")
             self.streaming = cv2.VideoCapture(0)
-            # ux.message("capturing the background")
-            # self.static_back = self.capture_grey_blurred_image()
-            self.static_back = None
+
 
         except Exception as e:
             ux.message("camera error: "+e)
