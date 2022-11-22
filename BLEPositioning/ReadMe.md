@@ -73,5 +73,4 @@ Bisogna avere scaricato le sdk relative al proprio sistema Android.
 
 
 <h2>Diagramma funzioni</h2>
-
-![](Diagramma funzioni.drawio.png)
+https://github.com/icar-aose/AAL4E/blob/6c40d2546c59ec9d22030ffacfc4c907447dd665/BLEPositioning/Diagramma%20funzioni.drawio.png
