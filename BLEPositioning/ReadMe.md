@@ -74,4 +74,4 @@ Bisogna avere scaricato le sdk relative al proprio sistema Android.
 
 <h2>Diagramma funzioni</h2>
 
-![](/home/pablo/MEGA/Università/Tirocinio/Diagramma funzioni.drawio.png)
+![](Diagramma funzioni.drawio.png)
