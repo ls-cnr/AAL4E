@@ -160,4 +160,76 @@ rule TransformStartNode {
 
 
 
+
+<h3>Explicit Starting Time</h3>
+
+<h4>Parameters:</h4>
+<p>
+<ul>
+    <li>param1</li>
+    <li>param2</li>
+</ul>
+</p>
+
+<h4>Description:</h4>
+<p>The activity related to the target goal will start exactly when the time condition holds. Examples: Explicit Starting Time 
+(every day at 3 pm)</p>
+
+<h4>Local Transform function:</h4>
+
+<pre style="font-family: Courier;">
+   <code>
+IDENTIFY the start node of C_G
+IF the start node is a Start Event, then REPLACE it with a Conditional Event (with the specified “condition” parameter)
+IF the start node is a Timer/Condition event, then REPLACE it with a Complex Event that merges the previous event and the new conditional event.
+IF there is not a start node, then CREATE a Conditional Event and then create a SequenceFlow from the event to the first node of the workflow
+   </code>
+</pre>
+
+<h4>Global Transform function:</h4>
+<p>no</p>
+
+<h4>ATL:</h4>
+
+<pre style="font-family: Courier;">
+<code>
+module ExplicitStartingEventLocalTransformation;
+create OUT : BPMN from IN : BPMN;
+
+-- Helper to identify the start node
+helper context BPMN!Node def: isStartNode() : Boolean =
+    self.oclIsTypeOf(BPMN!StartEvent);
+
+-- Helper to create a Conditional Event
+helper def: createConditionalEvent(condition : String) : BPMN!ConditionalEvent =
+    let conditionalEvent : BPMN!ConditionalEvent = BPMN!ConditionalEvent.createInstance() in
+        conditionalEvent.condition <- condition;
+        conditionalEvent;
+
+-- Main rule
+rule TransformStartNode {
+    from
+        s : BPMN!Node (s.isStartNode())
+    to
+        t : BPMN!Event (
+            if s.oclIsTypeOf(BPMN!StartEvent) then
+                -- Replace with a Conditional Event
+                thisModule.createConditionalEvent('condition')
+            else if s.oclIsTypeOf(BPMN!TimerEvent) or s.oclIsTypeOf(BPMN!ConditionEvent) then
+                -- Replace with a complex event
+                let complexEvent : BPMN!ComplexEvent = BPMN!ComplexEvent.createInstance() in
+                    complexEvent.events <- Sequence{s, thisModule.createConditionalEvent('condition')};
+                    complexEvent
+            else
+                -- Create a Conditional Event and link it with the first node
+                let conditionalEvent : BPMN!ConditionalEvent = thisModule.createConditionalEvent('condition') in
+                    conditionalEvent.next <- s;
+                    conditionalEvent
+            endif
+        )
+}
+
+</code>
+</pre>
+
                       
