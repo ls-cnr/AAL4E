@@ -8,30 +8,33 @@
 <h3>Personalization Goal Format</h3>
 <ul>
   <li><strong>Name:</strong> a unique reference to the personalization goal</li>
-  <li><strong>Parameters:*</strong> arguments to specify for instantiating the personalization goal (optional arguments are 
-specified by *)</li>
+  <li><strong>Parameters:</strong> arguments to specify for instantiating the personalization goal (optional arguments are 
+specified by an *)</li>
   <li><strong>Description:</strong> informal explanation of the kind of result</li>
   <li><strong>Example:</strong> possible instances of the personalization goal</li>
-  <li>Local/Global Trasform functions</li>
-  <li>ATL</li>
+  <li><strong>Local/Global Transform functions:</strong>Pseudococe for the local and global transformation functions that the workflow adapter component will use for applyting the goal.</li>
+  <li><strong>ATL:</strong> the same transformation formalized by using ATL, i.e, the Atlas Transformation Language</li>
 </ul>
 
 <h4>Explicit Starting Time</h4>
-Parameters:
-target_goal = “C_G”
-time_condition = “time”
+<h5>Parameters:</h5>
+<p>target_goal = “C_G”
+time_condition = “time”</p>
 
-Description: The activity related to the target goal will start exactly when the time condition holds.
-Examples: Explicit Starting Time (every day at 3 pm)
+<h5>Description:</h5>
+<p>The activity related to the target goal will start exactly when the time condition holds.
+Examples: Explicit Starting Time (every day at 3 pm)</p>
 
-Local Trasform function:
+<h5>Local Trasform function:</h5>
 
-<code>
+<pre>
+  <code>
 IDENTIFY the start node of C_G
 IF the start node is a Start Event, then REPLACE it with a Timer Event (with the specified time parameter)
 IF the start node is a Timer/Condition event, then REPLACE it with a complex event that contains the previous event and the new timer event.
 IF there is not a start node, then CREATE a Timer Event and LINK it with the first node of the workflow
-</code>
+  </code>
+</pre>
 
 Global Trasform function:
 no
