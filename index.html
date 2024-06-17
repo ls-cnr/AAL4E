@@ -27,7 +27,7 @@ Examples: Explicit Starting Time (every day at 3 pm)</p>
 
 <h4>Local Trasform function:</h4>
 
-<pre>
+<pre style="font-family: Courier;">
   <code>
 IDENTIFY the start node of C_G
 IF the start node is a Start Event, then REPLACE it with a Timer Event (with the specified time parameter)
@@ -40,6 +40,7 @@ IF there is not a start node, then CREATE a Timer Event and LINK it with the fir
 <p>no</p>
 
 <h4>ATL:</h4>
+<pre style="font-family: Courier;">
 <code>
 module ExplicitStartingTimeLocalTransformation;
 create OUT : BPMN from IN : BPMN;
@@ -76,8 +77,7 @@ rule TransformStartNode {
             endif
         )
 }
-</code>
- 
+</pre> 
 
  
 
