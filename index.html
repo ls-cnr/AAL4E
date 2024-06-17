@@ -21,8 +21,13 @@ specified by an *)</li>
   <h2>Table of Contents</h2>
   <ul>
     <li><a href="#explicit_start_time">Template 1: Explicit Starting Time</a></li>
-    <li><a href="#explicit_start_event">Template 1: Explicit Starting Event</a></li>
-    <li><a href="#section-3">Section 3: Conclusion</a></li>
+    <li><a href="#explicit_start_event">Template 2: Explicit Starting Event</a></li>
+    <li><a href="#explicit_termination_time">Template 3: Explicit Termination Time</a></li>
+    <li><a href="#explicit_termination_event">Template 4: Explicit Termination Event</a></li>
+    <li><a href="#maintain_repeat">Template 5: Maintain/Repeat Until</a></li>
+    <li><a href="#min_duration">Template 6: Min Duration</a></li>
+    <li><a href="#required_state">Template 7: Required State</a></li>
+    <li><a href="#avoid_state">Tenplate 8: Avoid State</a></li>
   </ul>
 </nav>
 
@@ -176,7 +181,7 @@ rule TransformStartNode {
 </section>
 
 
-                      
+<section id="explicit_termination_time">                      
 <h3>Explicit Termination Time</h3>
 <h4>Parameters:</h4>
 <p>
@@ -257,9 +262,10 @@ rule GlobalTransform {
 }
 </code>
 </pre>
+</section>
                       
                       
-
+<section id="explicit_termination_event">
 <h3>Explicit Termination Event</h3>
 <h4>Parameters:</h4>
 <p>
@@ -341,10 +347,11 @@ rule GlobalTransform {
 }
 </code>
 </pre>
+</section>
 
 
 
-
+<section id="maintain_repeat">
 <h3>MaintainRepeat Until</h3>
 <h4>Parameters:</h4>
 <p>
@@ -457,11 +464,12 @@ rule GlobalTransform {
 }
 </code>
 </pre>
+</section>
 
 
 
 
-
+<section id="min_duration">
 <h3>Min Duration</h3>
 <h4>Parameters:</h4>
 <p>
@@ -547,11 +555,12 @@ rule AddSuccessorFlows {
 }
 </code>
 </pre>
+</section>
 
 
 
 
-
+<section id="required_state">
 <h3>Required State/Condition</h3>
 <h4>Parameters:</h4>
 <p>
@@ -618,12 +627,13 @@ rule HandleSubProcessSeqDecomposition {
 }
 </code>
 </pre>
+</section>
 
 
 
 
 
-
+<section id="avoid_state">
 <h3>Avoid State/Condition</h3>
 <h4>Parameters:</h4>
 <p>
@@ -685,4 +695,5 @@ rule HandleNestedSubProcess {
 }
 </code>
 </pre>
+</section>
                       
