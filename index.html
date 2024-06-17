@@ -1,11 +1,7 @@
 <h1>Personalization Goals</h1>
-
-
-
-<h2>Template Repository</h2>
 <p>This section reports the personalization goals that we identified/used for the assistance scenario.</p>
 
-<h3>Personalization Goal Format</h3>
+<h2>Personalization Goal Format</h2>
 <ul>
   <li><strong>Name:</strong> a unique reference to the personalization goal</li>
   <li><strong>Parameters:</strong> arguments to specify for instantiating the personalization goal (optional arguments are 
@@ -16,16 +12,20 @@ specified by an *)</li>
   <li><strong>ATL:</strong> the same transformation formalized by using ATL, i.e, the Atlas Transformation Language</li>
 </ul>
 
-<h4>Explicit Starting Time</h4>
-<h5>Parameters:</h5>
+
+
+<h2>Template Repository</h2>
+
+<h3>Explicit Starting Time</h3>
+<h4>Parameters:</h4>
 <p>target_goal = “C_G”
 time_condition = “time”</p>
 
-<h5>Description:</h5>
+<h4>Description:</h4>
 <p>The activity related to the target goal will start exactly when the time condition holds.
 Examples: Explicit Starting Time (every day at 3 pm)</p>
 
-<h5>Local Trasform function:</h5>
+<h4>Local Trasform function:</h4>
 
 <pre>
   <code>
@@ -36,10 +36,10 @@ IF there is not a start node, then CREATE a Timer Event and LINK it with the fir
   </code>
 </pre>
 
-Global Trasform function:
-no
+<h4>Global Trasform function:</h4>
+<p>no</p>
 
-ATL:
+<h4>ATL:</h4>
 <code>
 module ExplicitStartingTimeLocalTransformation;
 create OUT : BPMN from IN : BPMN;
