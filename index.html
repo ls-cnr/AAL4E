@@ -1,1 +1,841 @@
-<h1>Hello</h1>
+<h1>Personalization Goals</h1>
+
+
+
+<h2>Template Repository</h2>
+<p>This section reports the personalization goals that we identified/used for the assistance scenario.</p>
+
+<h3>Personalization Goal Format</h3>
+<ul>
+  <li><strong>Name:</strong> a unique reference to the personalization goal</li>
+  <li><strong>Parameters:*</strong> arguments to specify for instantiating the personalization goal (optional arguments are 
+specified by *)</li>
+  <li><strong>Description:</strong> informal explanation of the kind of result</li>
+  <li><strong>Example:</strong> possible instances of the personalization goal</li>
+  <li>Local/Global Trasform functions</li>
+  <li>ATL</li>
+</ul>
+
+<h4>Explicit Starting Time</h4>
+Parameters:
+target_goal = “C_G”
+time_condition = “time”
+
+Description: The activity related to the target goal will start exactly when the time condition holds.
+Examples: Explicit Starting Time (every day at 3 pm)
+
+Local Trasform function:
+
+<code>
+IDENTIFY the start node of C_G
+IF the start node is a Start Event, then REPLACE it with a Timer Event (with the specified time parameter)
+IF the start node is a Timer/Condition event, then REPLACE it with a complex event that contains the previous event and the new timer event.
+IF there is not a start node, then CREATE a Timer Event and LINK it with the first node of the workflow
+</code>
+
+Global Trasform function:
+no
+
+ATL:
+<code>
+module ExplicitStartingTimeLocalTransformation;
+create OUT : BPMN from IN : BPMN;
+
+-- Helper to identify the start node
+helper context BPMN!Node def: isStartNode() : Boolean =
+    self.oclIsTypeOf(BPMN!StartEvent);
+
+-- Helper to create a Timer Event
+helper def: createTimerEvent(time : String) : BPMN!TimerEvent =
+    let timerEvent : BPMN!TimerEvent = BPMN!TimerEvent.createInstance() in
+        timerEvent.time <- time;
+        timerEvent;
+
+-- Main rule
+rule TransformStartNode {
+    from
+        s : BPMN!Node (s.isStartNode())
+    to
+        t : BPMN!Event (
+            if s.oclIsTypeOf(BPMN!StartEvent) then
+                -- Replace with a Timer Event
+                thisModule.createTimerEvent('time')
+            else if s.oclIsTypeOf(BPMN!TimerEvent) or s.oclIsTypeOf(BPMN!ConditionEvent) then
+                -- Replace with a complex event
+                let complexEvent : BPMN!ComplexEvent = BPMN!ComplexEvent.createInstance() in
+                    complexEvent.events <- Sequence{s, thisModule.createTimerEvent('time')};
+                    complexEvent
+            else
+                -- Create a Timer Event and link it with the first node
+                let timerEvent : BPMN!TimerEvent = thisModule.createTimerEvent('time') in
+                    timerEvent.next <- s;
+                    timerEvent
+            endif
+        )
+}
+</code>
+ 
+
+ 
+
+ 
+
+Explicit Starting Event
+Parameters:
+target_goal = “C_G”
+event_condition = “condition"
+proactive : true | false (optional)
+
+Description: The activity related to the target goal will start exactly when the event condition holds. If the proactive parameter is not specified, it means the context manager will generate the event. Otherwise, the workflow will raise the event; a specified sub-goal will be added to the abstract workflow to detect the specified conditions proactively.
+
+Examples: Explicit Starting Event (the user is bored)
+
+ 
+
+LOCAL TRANSFORM:
+ 
+
+IDENTIFY the start node of C_G
+
+IF the start node is a Start Event, then REPLACE it with a Conditional Event (with the specified “condition” parameter)
+
+IF the start node is a Timer/Condition event, then REPLACE it with a Complex Event that merges the previous event and the new conditional event.
+
+IF there is not a start node, then CREATE a Conditional Event and then create a SequenceFlow from the event to the first node of the workflow
+
+GLOBAL:
+no
+
+ATL
+module ExplicitStartingEventLocalTransformation;
+
+create OUT : BPMN from IN : BPMN;
+
+ 
+
+-- Helper to identify the start node
+
+helper context BPMN!Node def: isStartNode() : Boolean =
+
+    self.oclIsTypeOf(BPMN!StartEvent);
+
+ 
+
+-- Helper to create a Conditional Event
+
+helper def: createConditionalEvent(condition : String) : BPMN!ConditionalEvent =
+
+    let conditionalEvent : BPMN!ConditionalEvent = BPMN!ConditionalEvent.createInstance() in
+
+        conditionalEvent.condition <- condition;
+
+        conditionalEvent;
+
+ 
+
+-- Main rule
+
+rule TransformStartNode {
+
+    from
+
+        s : BPMN!Node (s.isStartNode())
+
+    to
+
+        t : BPMN!Event (
+
+            if s.oclIsTypeOf(BPMN!StartEvent) then
+
+                -- Replace with a Conditional Event
+
+                thisModule.createConditionalEvent('condition')
+
+            else if s.oclIsTypeOf(BPMN!TimerEvent) or s.oclIsTypeOf(BPMN!ConditionEvent) then
+
+                -- Replace with a complex event
+
+                let complexEvent : BPMN!ComplexEvent = BPMN!ComplexEvent.createInstance() in
+
+                    complexEvent.events <- Sequence{s, thisModule.createConditionalEvent('condition')};
+
+                    complexEvent
+
+            else
+
+                -- Create a Conditional Event and link it with the first node
+
+                let conditionalEvent : BPMN!ConditionalEvent = thisModule.createConditionalEvent('condition') in
+
+                    conditionalEvent.next <- s;
+
+                    conditionalEvent
+
+            endif
+
+        )
+
+}
+
+ 
+
+Explicit Termination Time
+parameters:
+target_goal = “C_G”
+time_condition = “time”
+
+Description: During the execution of the target workflow chunk, if the time condition holds, then the chunk will terminate immediately.
+
+Examples: Explicit Termination Time (5 pm)
+
+LOCAL TRANSFORM:
+IDENTIFY the start node of C_G
+
+REPLACE all the nodes of C_G with a Sub-Process Task that contains all of them
+
+ADD a Boundary Timer Event (with the specified “time” parameter) to the created Sub-Process Task
+
+GLOBAL TRANSFORM
+IDENTIFY successor nodes of C_G
+
+FOREACH successor node, ADD a SequenceFlow from the Boundary Event to the node
+
+ATL
+module ExplicitTerminationTime;
+
+create OUT : BPMN from IN : BPMN;
+
+ 
+
+-- Helper to identify the start node and successor nodes
+
+helper context BPMN!Node def: isStartNode() : Boolean =
+
+    self.oclIsTypeOf(BPMN!StartEvent);
+
+helper context BPMN!Node def: getSuccessorNodes() : Sequence(BPMN!Node) =
+
+    self.outgoing->collect(t | t.target);
+
+ 
+
+-- Helper to create a Boundary Timer Event
+
+helper def: createBoundaryTimerEvent(time : String) : BPMN!BoundaryTimerEvent =
+
+    let boundaryTimerEvent : BPMN!BoundaryTimerEvent = BPMN!BoundaryTimerEvent.createInstance() in
+
+        boundaryTimerEvent.time <- time;
+
+        boundaryTimerEvent;
+
+ 
+
+-- Main rule for local transformation
+
+rule LocalTransform {
+
+    from
+
+        s : BPMN!Node (s.isStartNode())
+
+    to
+
+        t : BPMN!SubProcess (
+
+            -- Replace all the nodes of C_G with a Sub-Process Task that contains all of them
+
+            nodes <- IN!Node.allInstances(),
+
+            -- Add a Boundary Timer Event to the created Sub-Process Task
+
+            boundaryEvent <- thisModule.createBoundaryTimerEvent('time')
+
+        )
+
+}
+
+ 
+
+-- Main rule for global transformation
+
+rule GlobalTransform {
+
+    from
+
+        s : BPMN!Node (s.getSuccessorNodes()->notEmpty())
+
+    using {
+
+        successors : Sequence(BPMN!Node) = s.getSuccessorNodes();
+
+    }
+
+    do {
+
+        -- For each successor node, add a SequenceFlow from the Boundary Event to the node
+
+        successors->forEach(succ |
+
+            let boundaryEvent : BPMN!BoundaryTimerEvent = thisModule.createBoundaryTimerEvent('time') in
+
+                IN!SequenceFlow.allInstances()->including(thisModule.createSequenceFlow(boundaryEvent, succ))
+
+        );
+
+    }
+
+}
+
+Explicit Termination Event
+parameters:
+
+target_goal = “C_G”
+event_condition = “condition”
+proactive : true|false (optional)
+escalation_condition : true|false (optional)
+
+Description: The workflow chunk will terminate immediately if the event condition holds. If the proactive parameter is not specified, it means the context manager will generate the event. Otherwise, the workflow will raise the event; a specified sub-goal will be added to the abstract workflow to detect the specified conditions proactively. The escalation parameter, if specified, means that the termination is considered an error and further action is required. Consequently, the system is asked to address the given escalation_condition.
+
+Examples: Explicit Termination Event (emotional state changes)
+
+LOCAL TRANSFORM
+IDENTIFY the start node of C_G
+
+REPLACE all the nodes of C_G with a Sub-Process Task that contains all of them
+
+ADD a Boundary Conditional Event (with the specified “condition” parameter) to the created Sub-Process Task
+
+GLOBAL TRANSFORM
+IDENTIFY successor nodes of C_G
+
+FOREACH successor node, ADD a SequenceFlow from the Boundary Event to the node
+
+ATL
+module ExplicitTerminationEvent;
+
+create OUT : BPMN from IN : BPMN;
+
+ 
+
+-- Helper to identify the start node and successor nodes
+
+helper context BPMN!Node def: isStartNode() : Boolean =
+
+    self.oclIsTypeOf(BPMN!StartEvent);
+
+helper context BPMN!Node def: getSuccessorNodes() : Sequence(BPMN!Node) =
+
+    self.outgoing->collect(t | t.target);
+
+ 
+
+-- Helper to create a Boundary Conditional Event
+
+helper def: createBoundaryConditionalEvent(condition : String) : BPMN!BoundaryConditionalEvent =
+
+    let boundaryConditionalEvent : BPMN!BoundaryConditionalEvent = BPMN!BoundaryConditionalEvent.createInstance() in
+
+        boundaryConditionalEvent.condition <- condition;
+
+        boundaryConditionalEvent;
+
+ 
+
+-- Main rule for local transformation
+
+rule LocalTransform {
+
+    from
+
+        s : BPMN!Node (s.isStartNode())
+
+    to
+
+        t : BPMN!SubProcess (
+
+            -- Replace all the nodes of C_G with a Sub-Process Task that contains all of them
+
+            nodes <- IN!Node.allInstances(),
+
+            -- Add a Boundary Conditional Event to the created Sub-Process Task
+
+            boundaryEvent <- thisModule.createBoundaryConditionalEvent('condition')
+
+        )
+
+}
+
+ 
+
+-- Main rule for global transformation
+
+rule GlobalTransform {
+
+    from
+
+        s : BPMN!Node (s.getSuccessorNodes()->notEmpty())
+
+    using {
+
+        successors : Sequence(BPMN!Node) = s.getSuccessorNodes();
+
+    }
+
+    do {
+
+        -- For each successor node, add a SequenceFlow from the Boundary Event to the node
+
+        successors->forEach(succ |
+
+            let boundaryEvent : BPMN!BoundaryConditionalEvent = thisModule.createBoundaryConditionalEvent('condition') in
+
+                IN!SequenceFlow.allInstances()->including(thisModule.createSequenceFlow(boundaryEvent, succ))
+
+        );
+
+    }
+
+}
+
+MaintainRepeat Until
+parameters:
+
+target_goal = “C_G”
+maintain_condition = “condition”
+proactive : true | false (optional)
+
+ 
+
+Description: After the goal has been addressed, the system will maintain the obtained result until a specified condition occurs; when the proactive parameter is specified, the system is up to check if the specified condition holds proactively.
+
+Examples: MaintainRepeat Until (the user is no longer engaged).
+
+LOCAL TRANSFORM
+IDENTIFY the first node of C_G
+
+CREATE a Join Exclusive Gateway, and ADD a Sequence Flow from the gateway to the first node of C_G
+
+IDENTIFY the last node of C_G
+
+CREATE a Fork Exclusive Gateway, and ADD a Sequence Flow from the last node of C_G to the gateway
+
+ADD a SequenceFlow from the fork gateway to the join gateway; MARK this flow with the given “condition”
+
+GLOBAL TRANSFORM
+IDENTIFY the predecessor nodes of the first node of C_G
+
+FOREACH predecessor node, ADD a SequenceFlow from the node to the join gateway
+
+IDENTIFY the successor nodes of the last node of C_G
+
+FOREACH successor node, ADD a SequenceFlow from the fork gateway to the node, MARK this flow as "otherwise"
+
+ATL
+module MaintainRepeatUntil;
+
+create OUT : BPMN from IN : BPMN;
+
+ 
+
+-- Helper to identify the first and last nodes, and their predecessor and successor nodes
+
+helper context BPMN!Node def: isFirstNode() : Boolean =
+
+    self.incoming->isEmpty();
+
+helper context BPMN!Node def: isLastNode() : Boolean =
+
+    self.outgoing->isEmpty();
+
+helper context BPMN!Node def: getPredecessorNodes() : Sequence(BPMN!Node) =
+
+    self.incoming->collect(t | t.source);
+
+helper context BPMN!Node def: getSuccessorNodes() : Sequence(BPMN!Node) =
+
+    self.outgoing->collect(t | t.target);
+
+ 
+
+-- Helper to create a Join Exclusive Gateway and a Fork Exclusive Gateway
+
+helper def: createJoinExclusiveGateway() : BPMN!JoinExclusiveGateway =
+
+    BPMN!JoinExclusiveGateway.createInstance();
+
+helper def: createForkExclusiveGateway() : BPMN!ForkExclusiveGateway =
+
+    BPMN!ForkExclusiveGateway.createInstance();
+
+ 
+
+-- Helper to create a Sequence Flow
+
+helper def: createSequenceFlow(source : BPMN!Node, target : BPMN!Node, condition : String) : BPMN!SequenceFlow =
+
+    let sequenceFlow : BPMN!SequenceFlow = BPMN!SequenceFlow.createInstance() in
+
+        sequenceFlow.source <- source;
+
+        sequenceFlow.target <- target;
+
+        sequenceFlow.condition <- condition;
+
+        sequenceFlow;
+
+ 
+
+-- Main rule for local transformation
+
+rule LocalTransform {
+
+    from
+
+        s : BPMN!Node (s.isFirstNode() or s.isLastNode())
+
+    to
+
+        t : BPMN!Node (
+
+            if s.isFirstNode() then
+
+                -- Create a Join Exclusive Gateway and add a Sequence Flow from the gateway to the first node
+
+                let gateway : BPMN!JoinExclusiveGateway = thisModule.createJoinExclusiveGateway() in
+
+                    gateway.outgoing <- thisModule.createSequenceFlow(gateway, s, 'condition');
+
+                    gateway
+
+            else if s.isLastNode() then
+
+                -- Create a Fork Exclusive Gateway and add a Sequence Flow from the last node to the gateway
+
+                let gateway : BPMN!ForkExclusiveGateway = thisModule.createForkExclusiveGateway() in
+
+                    gateway.incoming <- thisModule.createSequenceFlow(s, gateway, 'condition');
+
+                    gateway
+
+            else
+
+                s
+
+            endif
+
+        )
+
+}
+
+ 
+
+-- Main rule for global transformation
+
+rule GlobalTransform {
+
+    from
+
+        s : BPMN!Node (s.getPredecessorNodes()->notEmpty() or s.getSuccessorNodes()->notEmpty())
+
+    using {
+
+        predecessors : Sequence(BPMN!Node) = s.getPredecessorNodes();
+
+        successors : Sequence(BPMN!Node) = s.getSuccessorNodes();
+
+    }
+
+    do {
+
+        -- For each predecessor node, add a SequenceFlow from the node to the join gateway
+
+        predecessors->forEach(pred |
+
+            let joinGateway : BPMN!JoinExclusiveGateway = thisModule.createJoinExclusiveGateway() in
+
+                IN!SequenceFlow.allInstances()->including(thisModule.createSequenceFlow(pred, joinGateway, 'condition'))
+
+        );
+
+        -- For each successor node, add a SequenceFlow from the fork gateway to the node, mark this flow as "otherwise"
+
+        successors->forEach(succ |
+
+            let forkGateway : BPMN!ForkExclusiveGateway = thisModule.createForkExclusiveGateway() in
+
+                IN!SequenceFlow.allInstances()->including(thisModule.createSequenceFlow(forkGateway, succ, 'otherwise'))
+
+        );
+
+    }
+
+}
+
+Max Duration == Explicit Termination Time
+Min Duration
+parameters:
+target_goal = “C_G”
+duration = “time”
+
+ 
+
+Description: The minimum duration of the activities related to the target goal.
+
+Examples: Min Duration (15 mins)
+
+LOCAL TRANSFORM
+IDENTIFY the first node of C_G
+
+CREATE a Join Exclusive Gateway, and ADD a Sequence Flow from the gateway to the first node of C_G
+
+IDENTIFY the last node of C_G
+
+CREATE a Fork Exclusive Gateway, and ADD a Sequence Flow from the last node of C_G to the gateway
+
+ADD a SequenceFlow from the fork gateway to the join gateway; MARK this flow with the given “time”
+
+GLOBAL TRANSFORM
+IDENTIFY the predecessor nodes of the first node of C_G
+
+FOREACH predecessor node, ADD a SequenceFlow from the node to the join gateway
+
+IDENTIFY the successor nodes of the last node of C_G
+
+FOREACH successor node, ADD a SequenceFlow from the fork gateway to the node, MARK this flow as "otherwise"
+
+ATL
+module MinDuration;
+
+create OUT : BPMN from IN : BPMN;
+
+ 
+
+-- Local Transform
+
+rule CreateJoinExclusiveGateway {
+
+  from
+
+    s: BPMN!StartEvent (s.name = 'C_G')
+
+  to
+
+    t: BPMN!ExclusiveGateway (t.name = 'JoinGateway'),
+
+    f: BPMN!SequenceFlow (f.sourceRef = t, f.targetRef = s)
+
+}
+
+ 
+
+rule CreateForkExclusiveGateway {
+
+  from
+
+    e: BPMN!EndEvent (e.name = 'C_G')
+
+  to
+
+    t: BPMN!ExclusiveGateway (t.name = 'ForkGateway'),
+
+    f: BPMN!SequenceFlow (f.sourceRef = e, f.targetRef = t)
+
+}
+
+ 
+
+rule AddSequenceFlow {
+
+  from
+
+    j: BPMN!ExclusiveGateway (j.name = 'JoinGateway'),
+
+    f: BPMN!ExclusiveGateway (f.name = 'ForkGateway')
+
+  to
+
+    sf: BPMN!SequenceFlow (sf.sourceRef = f, sf.targetRef = j, sf.name = 'time')
+
+}
+
+ 
+
+-- Global Transform
+
+rule AddPredecessorFlows {
+
+  from
+
+    s: BPMN!StartEvent (s.name = 'C_G'),
+
+    p: BPMN!FlowNode (p.outgoing -> includes(s))
+
+  to
+
+    sf: BPMN!SequenceFlow (sf.sourceRef = p, sf.targetRef = s)
+
+}
+
+ 
+
+rule AddSuccessorFlows {
+
+  from
+
+    e: BPMN!EndEvent (e.name = 'C_G'),
+
+    s: BPMN!FlowNode (s.incoming -> includes(e))
+
+  to
+
+    sf: BPMN!SequenceFlow (sf.sourceRef = e, sf.targetRef = s, sf.name = 'otherwise')
+
+}
+
+Required State/Condition
+parameters:
+target_goal = “C_G”
+state = “subgoal”
+
+ 
+
+Description: The given condition must hold while the system addresses the target goal. The system is up to act to ensure the specified condition holds.
+
+Examples: Required State (the user is in the kitchen).
+
+LOCAL TRANSFORM
+IDENTIFY the type of C_G
+
+IF the type is task OR SubProcess marked as "AND decomposition", THEN { CREATE a SubProcess task, MARK the SubProcess task as "AND decomposition", MOVE the activity node into the SubProcess task, and ADD a new task which name is "subgoal" }
+
+IF the type is SubProcess marked as "AND decomposition", THEN ADD a new task which name is "subgoal"
+
+IF the type is SubProcess marked as "SEQ decomposition", THEN IDENTIFY the last node before the end event, REMOVE the sequence flow from the last node and the end event, CREATE a new task which name is "subgoal", ADD a SequenceFlow from the last node to the subgoal node and ADD another SequenceFlow from the subgoal node to the end event.
+
+GLOBAL TRANSFORM
+ATL
+module RequiredState;
+
+create OUT : BPMN from IN : BPMN;
+
+ 
+
+-- Local Transform
+
+rule HandleTaskAndDecomposition {
+
+  from
+
+    s: BPMN!Task (s.name = 'C_G')
+
+  to
+
+    t: BPMN!SubProcess (t.name = 'AND decomposition', t.flowElements <- s),
+
+    n: BPMN!Task (n.name = 'subgoal')
+
+}
+
+ 
+
+rule HandleSubProcessAndDecomposition {
+
+  from
+
+    s: BPMN!SubProcess (s.name = 'C_G' and s.decomposition = 'AND decomposition')
+
+  to
+
+    n: BPMN!Task (n.name = 'subgoal')
+
+}
+
+ 
+
+rule HandleSubProcessSeqDecomposition {
+
+  from
+
+    s: BPMN!SubProcess (s.name = 'C_G' and s.decomposition = 'SEQ decomposition'),
+
+    e: BPMN!EndEvent (e.container = s),
+
+    l: BPMN!FlowNode (l.outgoing -> includes(e))
+
+  to
+
+    n: BPMN!Task (n.name = 'subgoal'),
+
+    sf1: BPMN!SequenceFlow (sf1.sourceRef = l, sf1.targetRef = n),
+
+    sf2: BPMN!SequenceFlow (sf2.sourceRef = n, sf2.targetRef = e)
+
+}
+
+Avoid State/Condition
+parameters:
+target_goal = “C_G”
+state = “subgoal”
+
+Description: while the system addresses the target goal, the given condition must not hold.
+
+Examples: Avoid State (social interaction).
+LOCAL TRANSFORM
+IDENTIFY the type of C_G
+
+IF the type is SubProcess marked as "AND decomposition" OR "OR decomposition OR SEQ decomposition", THEN { FOREACH node in the subprocess, IF the node is a task, REMOVE it; IF the node is a Subprocess THEN apply recursively the same rule.}
+
+GLOBAL TRASFORM
+ATL
+module AvoidState;
+
+create OUT : BPMN from IN : BPMN;
+
+ 
+
+helper context BPMN!SubProcess def: isDecompositionType(): Boolean =
+
+  thisModule.decomposition = 'AND decomposition' or thisModule.decomposition = 'OR decomposition' or thisModule.decomposition = 'SEQ decomposition';
+
+ 
+
+-- Local Transform
+
+rule HandleSubProcessDecomposition {
+
+  from
+
+    s: BPMN!SubProcess (s.name = 'C_G' and s.isDecompositionType()),
+
+    n: BPMN!FlowNode (n.container = s and n.oclIsTypeOf(BPMN!Task))
+
+  to
+
+    d: BPMN!FlowNode (d <- n) do {
+
+      d.container.flowElements.remove(n);
+
+    }
+
+}
+
+ 
+
+rule HandleNestedSubProcess {
+
+  from
+
+    s: BPMN!SubProcess (s.name = 'C_G' and s.isDecompositionType()),
+
+    n: BPMN!SubProcess (n.container = s)
+
+  to
+
+    d: BPMN!SubProcess (d <- n) do {
+
+      thisModule.HandleSubProcessDecomposition(n);
+
+    }
+
+}
