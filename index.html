@@ -81,8 +81,8 @@ rule TransformStartNode {
             endif
         )
 }
-</pre> 
-
+</code>
+</pre>
  
 
  <h3>Explicit Starting Event</h3>
@@ -103,14 +103,16 @@ sub-goal will be added to the abstract workflow to detect the specified conditio
 <p>Examples: Explicit Starting Event (the user is bored)</p>
 
 <h4>Local Trasform function:</h4>
-<p>
+<pre style="font-family: Courier;">
+  <code>
 IDENTIFY the start node of C_G
 IF the start node is a Start Event, then REPLACE it with a Conditional Event (with the specified “condition” parameter)
 IF the start node is a Timer/Condition event, then REPLACE it with a Complex Event that merges the previous event and the new 
 conditional event.
 IF there is not a start node, then CREATE a Conditional Event and then create a SequenceFlow from the event to the first node 
 of the workflow
-</p>
+</code>
+</pre>
 
 <h4>Global Trasform function:</h4>
 <p>no</p>
